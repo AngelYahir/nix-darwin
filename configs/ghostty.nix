@@ -20,7 +20,9 @@
             cursor-style = "block";
             cursor-style-blink = true;
 
-            window-save-state = false;
+            window-save-state = "never";
+
+            window-theme = "ghostty";
 
         };
 

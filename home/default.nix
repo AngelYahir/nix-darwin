@@ -8,9 +8,8 @@
         ../configs/git.nix
         ../configs/zsh.nix
         ../configs/ghostty.nix
-        ../configs/jankyborders.nix
-        ../configs/aerospace.nix
         ../configs/sketchybar.nix
+        ../configs/starship.nix
     ];
 
     home.username = username;

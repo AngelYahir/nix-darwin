@@ -1,7 +1,7 @@
 { pkgs, ... }:
 
 { 
-    services.sketchybar = {
+    programs.sketchybar = {
         enable = true;
 
         extraPackages = with pkgs; [

@@ -20,6 +20,7 @@
   {
     # Build darwin flake using:
     # $ darwin-rebuild build --flake .#angel-flake
+    # sudo darwin-rebuild switch --flake .#angel-flake
     darwinConfigurations.${hostname} = nix-darwin.lib.darwinSystem {
       specialArgs = { inherit inputs username hostname; };
       modules = [

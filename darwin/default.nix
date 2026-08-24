@@ -6,7 +6,13 @@
 }:
 
 {
-    imports = [ ./homebrew.nix ];
+    imports = [ 
+            ./homebrew.nix
+            ../configs/jankyborders.nix
+            ../configs/aerospace.nix
+            ../configs/fonts.nix
+            ../configs/macos.nix
+        ];
 
     nixpkgs.hostPlatform = "aarch64-darwin";
     system.primaryUser = username;
@@ -16,19 +22,5 @@
 
     users.users.${username} = { home = "/Users/${username}"; };
 
-    system.defaults = {
-        dock = {
-            autohide = true;
-            magnification = true;
-            show-recents = false;
-            tilesize = 48;
-        };
-
-        finder = {
-            AppleShowAllFiles = true;
-            FXPreferredViewStyle = "clmv";
-        };
-
-    };
     system.stateVersion = 7;
 }
