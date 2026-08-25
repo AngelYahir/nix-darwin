@@ -7,5 +7,5 @@
         settings =
             builtins.fromTOML
                 (builtins.readFile ./starship/starship.toml);
-    }
+    };
 }

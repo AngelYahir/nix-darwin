@@ -5,11 +5,10 @@
         NSGlobalDomain = {
             #Appearance
             AppleInterfaceStyle = "Dark";
-            AppleInterfaceStyleSwitchesAutomatically = true;
+            AppleInterfaceStyleSwitchesAutomatically = false;
 
             #Hide Menu Bar
             _HIHideMenuBar = true;
-            _HIHideMenuBarOnFullScreen = false;
 
             #Scrollbars
             AppleShowScrollBars = "WhenScrolling";
@@ -24,15 +23,15 @@
             show-recents = false;
             tilesize = 48;
             showAppExposeGestureEnabled = true;
-            auto-hide-delay = 0.0;
-            auto-hide-time-modifier = 0.2;
+            autohide-delay = 0.0;
+            autohide-time-modifier = 0.2;
 
             wvous-br-corner = 14;
         };
 
         finder = {
             AppleShowAllFiles = true;
-            AppleShowAllFiles = true;
+            AppleShowAllExtensions = true;
 
             ShowPathbar = true;
             ShowStatusBar = true;
@@ -57,7 +56,6 @@
 
             TrackpadCornerSecondaryClick = 0;
 
-            TrackpadFiveFingerPinchGesture = 2;
             TrackpadFourFingerHorizSwipeGesture = 2;
             TrackpadFourFingerPinchGesture = 2;
 
@@ -77,8 +75,7 @@
 
         WindowManager = {
             EnableStandardClickToShowDesktop = false;
-            EnableTiledWindowDragging = true;
-            EnableTiledWindowMargin = false;
+            EnableTiledWindowMargins = false;
         };
 
         #Accent Color or other custom preferences can be set here
