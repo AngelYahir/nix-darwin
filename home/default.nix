@@ -11,6 +11,7 @@
         ../configs/sketchybar.nix
         ../configs/starship.nix
         ../configs/zellij.nix
+        ../configs/zen.nix
     ];
 
     home.username = username;

@@ -14,12 +14,13 @@
             window-padding-x = 4;
             window-padding-y = 8;
             window-padding-balance = true;
+            confirm-close-surface = false;
 
             shell-integration = "zsh";
 
-            background-blur = 30;
+            background-blur = "macos-glass-regular";
             background-opacity = 0.82;
-            background-opacity-cells = true;
+            background-opacity-cells = false;
 
             background = "#1e1e2e";
             foreground = "#cdd6f4";
