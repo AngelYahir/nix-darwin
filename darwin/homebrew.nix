@@ -22,6 +22,8 @@
             "datagrip"
             "raycast"
             "ghostty"
+            "onlyoffice"
+            "sf-symbols"
         ];
 
         onActivation = {

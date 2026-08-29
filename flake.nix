@@ -17,9 +17,14 @@
       url = "github:catppuccin/zen-browser";
       flake = false;
     };
+
+    catppuccin = {
+      url = "github:catppuccin/nix";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
   };
 
-  outputs = inputs@{ self, nix-darwin, nixpkgs, home-manager, nix-homebrew, zjstatus, ... }:
+  outputs = inputs@{ self, nix-darwin, nixpkgs, home-manager, nix-homebrew, zjstatus, catppuccin, ... }:
   let
     username = "angel";
     hostname = "angel-flake";
@@ -34,7 +39,6 @@
         ./darwin
         nix-homebrew.darwinModules.nix-homebrew
         home-manager.darwinModules.home-manager
-
         {
           home-manager = {
             useGlobalPkgs = true;

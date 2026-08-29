@@ -6,6 +6,7 @@
 
         extraPackages = with pkgs; [
             jq
+            nowplaying-cli
         ];
 
         configType = "lua";

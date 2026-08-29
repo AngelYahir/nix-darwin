@@ -1,3 +1,25 @@
+local function with_alpha(color, alpha)
+  assert(type(color) == "number", "with_alpha expected a numeric color")
+  if alpha > 1.0 or alpha < 0.0 then return color end
+  return (color & 0x00ffffff) | (math.floor(alpha * 255.0) << 24)
+end
+
+local function brighten(color, amount)
+  assert(type(color) == "number", "brighten expected a numeric color")
+  if amount <= 0.0 then return color end
+  amount = math.min(amount, 1.0)
+
+  local function lift(channel)
+    return math.floor(channel + (255 - channel) * amount + 0.5)
+  end
+
+  local alpha = color & 0xff000000
+  local red = lift((color >> 16) & 0xff)
+  local green = lift((color >> 8) & 0xff)
+  local blue = lift(color & 0xff)
+  return alpha | (red << 16) | (green << 8) | blue
+end
+
 return {
   -- Catppuccin Mocha Color Palette
   rosewater = 0xfff5e0dc,
@@ -33,6 +55,17 @@ return {
   white = 0xffcdd6f4,    -- text
   grey = 0xff6c7086,     -- overlay0
   orange = 0xfffab387,   -- peach
+  magenta = 0xffcba6f7,  -- mauve
+  rose = 0xfff5e0dc,     -- rosewater
+  gold = 0xfff9e2af,     -- yellow
+  love = 0xfff38ba8,     -- red
+
+  -- Semantic colors used by the bar items.
+  accent = 0xffcba6f7,          -- mauve
+  hover = 0x1acdd6f4,           -- text at 10% opacity
+  hover_amount = 0.12,
+  space_active = 0xffcba6f7,    -- mauve
+  space_active_fg = 0xff1e1e2e, -- base
 
   bar = {
     bg = 0x00000000,     -- transparent
@@ -44,9 +77,8 @@ return {
   },
   bg1 = 0xff45475a,      -- surface1
   bg2 = 0xff585b70,      -- surface2
+  bg3 = 0xff6c7086,      -- overlay0
 
-  with_alpha = function(color, alpha)
-    if alpha > 1.0 or alpha < 0.0 then return color end
-    return (color & 0x00ffffff) | (math.floor(alpha * 255.0) << 24)
-  end,
+  with_alpha = with_alpha,
+  brighten = brighten,
 }

@@ -10,7 +10,7 @@
             default_layout = "default";
             pane_frames = false;
             mouse_mode = true;
-            copy_on_select = false;
+            copy_on_select = true;
             show_startup_tips = false;
             show_release_notes = false;
             scroll_buffer_size = 10000;

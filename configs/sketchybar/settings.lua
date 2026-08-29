@@ -1,3 +1,5 @@
+local colors = require("colors")
+
 return {
   padding = 3,
   group_padding = 3,
@@ -15,5 +17,12 @@ return {
       ["Heavy"] = "Heavy",
       ["Black"] = "Black",
     }
+  },
+
+  widget_bracket_bg = {
+    color = colors.transparent,
+    border_width = 0,
+    corner_radius = 32,
+    height = 32,
   }
 }

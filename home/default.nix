@@ -1,9 +1,12 @@
 {
+    inputs,
     username,
     ...
 }:
 {
     imports = [ 
+        inputs.catppuccin.homeModules.catppuccin  
+
         ./packages.nix
         ../configs/git.nix
         ../configs/zsh.nix
@@ -12,7 +15,18 @@
         ../configs/starship.nix
         ../configs/zellij.nix
         ../configs/zen.nix
+        ../configs/yazi.nix
+        ../configs/cava.nix
+
+        ../configs/wp.nix
     ];
+
+    catppuccin = {
+        enable = true;
+        autoEnable = true;
+        flavor = "mocha";
+        accent = "mauve";
+    };
 
     home.username = username;
     home.homeDirectory = "/Users/${username}";
