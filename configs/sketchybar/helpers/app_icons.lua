@@ -1,0 +1,51 @@
+return {
+	default = "󰀻",
+
+	["Code"] = "󰨞",
+	["Code - Insiders"] = "󰨞",
+	["Visual Studio Code"] = "󰨞",
+	["Cursor"] = "󰨞",
+	["Xcode"] = "",
+	["Zed"] = "󰵁",
+	["Neovide"] = "",
+
+	["Ghostty"] = "",
+	["Terminal"] = "",
+	["iTerm2"] = "",
+	["kitty"] = "",
+
+	["Zen"] = "󰈹",
+	["Zen Browser"] = "󰈹",
+	["Firefox"] = "󰈹",
+	["Safari"] = "󰀹",
+	["Google Chrome"] = "",
+	["Arc"] = "󰞍",
+	["Microsoft Edge"] = "󰇩",
+
+	["Finder"] = "󰀶",
+	["Datagrip"] = "",
+	["DataGrip"] = "",
+	["Docker"] = "",
+	["Docker Desktop"] = "",
+	["GitHub Desktop"] = "",
+
+	["Music"] = "",
+	["Cider"] = "󰎆",
+	["Spotify"] = "",
+	["VLC"] = "󰕼",
+	["QuickTime Player"] = "󰐊",
+
+	["Messages"] = "󰍩",
+	["Mail"] = "󰇮",
+	["Calendar"] = "",
+	["Notes"] = "󰎞",
+	["Reminders"] = "󰄲",
+	["Slack"] = "",
+	["Discord"] = "",
+	["WhatsApp"] = "",
+	["Telegram"] = "",
+
+	["System Settings"] = "",
+	["Activity Monitor"] = "󰍛",
+	["Passwords"] = "",
+}
