@@ -1,0 +1,8 @@
+keys:
+  - &angel age1094n8jgf9q994d6vzwrydkr36hx9fv7zymy7nu9d9wvtzjlt7pzsf5d6ln
+
+creation_rules:
+  - path_regex: secrets/.*\.yaml$
+    key_groups:
+      - age:
+        - *angel

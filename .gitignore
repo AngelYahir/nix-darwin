@@ -1,0 +1,60 @@
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Nix build outputs
+result
+result-*
+.direnv/
+
+# Logs / runtime files
+*.log
+*.pid
+*.tmp
+/tmp/
+
+# Editor junk
+*.swp
+*.swo
+*~
+.idea/
+
+# Environment files
+.env
+.env.*
+!.env.example
+
+# Local/private configuration
+private/
+local/
+*.local.nix
+*.private.nix
+
+# Secrets in plaintext
+secrets/plain/
+credentials/
+*.token
+*.secret
+
+# Private keys / certificates
+id_rsa
+id_rsa.*
+id_ed25519
+id_ed25519.*
+*.pem
+*.key
+*.p12
+*.pfx
+
+# Never commit plaintext secrets
+secrets/*.plain
+secrets/*.plaintext
+secrets/*.decrypted
+secrets/*.dec
+keys.txt
+*.agekey
+
+# Misc
+.DS_Store
+test.md

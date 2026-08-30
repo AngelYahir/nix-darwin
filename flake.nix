@@ -1,57 +1,60 @@
 {
-  description = "Angel nix-darwin system flake";
+  description = "Angel's personal configuration for macOS";
 
   inputs = {
-    # Nixpkgs channel to pull packages from.
     nixpkgs.url = "github:NixOS/nixpkgs/nixpkgs-unstable";
     nix-darwin.url = "github:nix-darwin/nix-darwin/master";
     nix-darwin.inputs.nixpkgs.follows = "nixpkgs";
 
-    # Home-manager integration.
     home-manager.url = "github:nix-community/home-manager";
     home-manager.inputs.nixpkgs.follows = "nixpkgs";
 
-    # Homebrew
-
     nix-homebrew.url = "github:zhaofengli/nix-homebrew";
 
-    homebrew-cask = {
-      url = "github:homebrew/homebrew-cask";
+    sops-nix = {
+      url = "github:Mic92/sops-nix";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+
+    zjstatus.url = "github:dj95/zjstatus";
+
+    catppuccin-zen = {
+      url = "github:catppuccin/zen-browser";
       flake = false;
+    };
+
+    catppuccin = {
+      url = "github:catppuccin/nix";
+      inputs.nixpkgs.follows = "nixpkgs";
     };
   };
 
-  outputs = inputs@{ self, nix-darwin, nixpkgs, home-manager, ... }:
+  outputs = inputs@{ self, nix-darwin, nixpkgs, home-manager, nix-homebrew, zjstatus, catppuccin, ... }:
   let
-    system = "aarch64-darwin"; # or "x86_64-darwin"
-    pkgs = nixpkgs.legacyPackages.${system};
+    # Change for your own username and hostname
+    username = "angel";
+    hostname = "angel-flake";
   in
   {
     # Build darwin flake using:
-    # $ sudo darwin-rebuild switch --flake .#angel     
-    darwinConfigurations."angel" = nix-darwin.lib.darwinSystem {
-      system = system;
+    # $ darwin-rebuild build --flake .#your-hostname
+    # sudo darwin-rebuild switch --flake .#your-hostname
+    darwinConfigurations.${hostname} = nix-darwin.lib.darwinSystem {
+      specialArgs = { inherit inputs username hostname; };
       modules = [
-
-        ./modules/configuration.nix
-        ./modules/homebrew.nix
-        ./modules/apps.nix
-        # Integrate home-manager into nix-darwin
+        ./darwin
+        nix-homebrew.darwinModules.nix-homebrew
         home-manager.darwinModules.home-manager
         {
-          users.users.angel.home = "/Users/angel";
-          home-manager.useGlobalPkgs = true;
-          home-manager.useUserPackages = true;
-          home-manager.backupFileExtension = "backup";
-          home-manager.users.angel = import ./modules/home.nix;
-        }
-      ];
-      specialArgs = { inherit inputs; };
-    };
+          home-manager = {
+            useGlobalPkgs = true;
+            useUserPackages = true;
 
-    devShells.${system}.default = pkgs.mkShell {
-      buildInputs = with pkgs; [
-        nodejs_25
+            extraSpecialArgs = { inherit inputs username hostname; };
+            
+            users.${username} = import ./home;
+          };
+        }
       ];
     };
   };
