@@ -11,6 +11,11 @@
 
     nix-homebrew.url = "github:zhaofengli/nix-homebrew";
 
+    sops-nix = {
+      url = "github:Mic92/sops-nix";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+
     zjstatus.url = "github:dj95/zjstatus";
 
     catppuccin-zen = {
@@ -26,13 +31,14 @@
 
   outputs = inputs@{ self, nix-darwin, nixpkgs, home-manager, nix-homebrew, zjstatus, catppuccin, ... }:
   let
+    # Change for your own username and hostname
     username = "angel";
     hostname = "angel-flake";
   in
   {
     # Build darwin flake using:
-    # $ darwin-rebuild build --flake .#angel-flake
-    # sudo darwin-rebuild switch --flake .#angel-flake
+    # $ darwin-rebuild build --flake .#your-hostname
+    # sudo darwin-rebuild switch --flake .#your-hostname
     darwinConfigurations.${hostname} = nix-darwin.lib.darwinSystem {
       specialArgs = { inherit inputs username hostname; };
       modules = [

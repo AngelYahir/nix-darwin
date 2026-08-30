@@ -1,23 +1,20 @@
-{ ... }:
+{ config, ... }:
 
 { 
     programs.git = {
         enable = true;
 
         settings = {
-            user = {
-                name = "AngelYahir";
-                email = "angel.torres@aytcode.com";
-            };
-
             credential = {
-                helper = "/usr/bin/git-credential-osxkeychain";
+                # Use the macOS keychain for storing Git credentials
+                helper = "/Library/Developer/CommandLineTools/usr/libexec/git-core/git-credential-osxkeychain";
             };
 
-            init.defaultBranch = "master";
+            init.defaultBranch = "main";
             pull.rebase = false;
             core.editor = "nvim";
             push.autoSetupRemote = true;
+            include.path = config.sops.templates."gitconfig.local".path;
         };
 
     };

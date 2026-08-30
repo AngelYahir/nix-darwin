@@ -21,7 +21,7 @@ local function brighten(color, amount)
 end
 
 return {
-  -- Catppuccin Mocha Color Palette
+  -- Catppuccin Mocha
   rosewater = 0xfff5e0dc,
   flamingo = 0xfff2cdcd,
   pink = 0xfff5c2e7,
@@ -50,34 +50,20 @@ return {
   crust = 0xff11111b,
   transparent = 0x00000000,
 
-  -- Legacy color aliases for compatibility
-  black = 0xff11111b,    -- crust
-  white = 0xffcdd6f4,    -- text
-  grey = 0xff6c7086,     -- overlay0
-  orange = 0xfffab387,   -- peach
-  magenta = 0xffcba6f7,  -- mauve
-  rose = 0xfff5e0dc,     -- rosewater
-  gold = 0xfff9e2af,     -- yellow
-  love = 0xfff38ba8,     -- red
-
-  -- Semantic colors used by the bar items.
-  accent = 0xffcba6f7,          -- mauve
-  hover = 0x1acdd6f4,           -- text at 10% opacity
+  accent = 0xffcba6f7,
+  panel = 0xf2313244,
+  hover = 0x1acdd6f4,
   hover_amount = 0.12,
-  space_active = 0xffcba6f7,    -- mauve
-  space_active_fg = 0xff1e1e2e, -- base
+  space_active = 0xffcba6f7,
+  space_active_fg = 0xff1e1e2e,
 
   bar = {
-    bg = 0x00000000,     -- transparent
-    border = 0xff313244, -- surface0
+    bg = 0x00000000,
   },
   popup = {
-    bg = 0xc01e1e2e,     -- base with alpha
-    border = 0xff6c7086  -- overlay0
+    bg = 0xf21e1e2e,
+    border = 0xff45475a,
   },
-  bg1 = 0xff45475a,      -- surface1
-  bg2 = 0xff585b70,      -- surface2
-  bg3 = 0xff6c7086,      -- overlay0
 
   with_alpha = with_alpha,
   brighten = brighten,

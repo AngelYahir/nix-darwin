@@ -1,25 +1,19 @@
 local utils = require("utils")
-local icons = require("icons")
 local colors = require("colors")
 local settings = require("settings")
 
 local battery = sbar.add("item", "widgets.battery", {
 	position = "right",
-	icon = {
-		font = {
-			style = settings.font.style_map["Bold"],
-			size = 14.0,
-		},
-		padding_left = 8,
-		padding_right = 4,
-	},
+	icon = { drawing = false },
 	label = {
+		drawing = false,
 		font = {
 			family = settings.font.numbers,
 			style = settings.font.style_map["Bold"],
 			size = 12.0,
 		},
-		color = colors.white,
+		color = colors.text,
+		padding_left = 8,
 		padding_right = 10,
 	},
 	update_freq = 30,
@@ -34,57 +28,43 @@ local remaining_time = sbar.add("item", {
 		padding_left = 15,
 	},
 	label = {
-		string = "??:??h",
+		string = "No estimate",
 		width = 110,
 		align = "right",
 		padding_right = 15,
 	},
 })
 
-battery:subscribe({ "routine", "power_source_change", "system_woke", "brightness_change" }, function()
+battery:subscribe({ "routine", "power_source_change", "system_woke", "forced" }, function()
 	sbar.exec("pmset -g batt", function(batt_info)
-		local icon = "!"
-		local label = "?"
-
 		local found, _, charge = batt_info:find("(%d+)%%")
-		if found then
-			charge = tonumber(charge)
-			label = charge .. "%"
+		if not found then
+			battery:set({ label = { drawing = false } })
+			return
 		end
+		charge = tonumber(charge)
 
 		local charging = batt_info:find("AC Power")
 
-		-- Colour ladder. The accent can't carry "healthy": in several themes
-		-- accent, red and love are the *same* value, so an accent-coloured full
-		-- battery was indistinguishable from a critical one. Green reads as
-		-- healthy, and red now means exactly one thing here — under 10%.
-		-- Charging takes cyan so it stays separable from a merely-full green.
 		local color
 		if charging then
-			icon = icons.battery.charging
 			color = colors.blue
-		elseif found and charge > 60 then
-			icon = icons.battery._100
+		elseif charge > 60 then
 			color = colors.green
-		elseif found and charge > 40 then
-			icon = icons.battery._75
-			color = colors.gold
-		elseif found and charge > 20 then
-			icon = icons.battery._50
-			color = colors.orange
-		elseif found and charge > 10 then
-			icon = icons.battery._25
-			color = colors.orange
+		elseif charge > 40 then
+			color = colors.yellow
+		elseif charge > 20 then
+			color = colors.peach
+		elseif charge > 10 then
+			color = colors.peach
 		else
-			icon = icons.battery._0
 			color = colors.red
 		end
 
-		local lead = (found and charge < 10) and "0" or ""
+		local lead = charge < 10 and "0" or ""
 
 		battery:set({
-			icon = { string = icon, color = color },
-			label = { string = lead .. label },
+			label = { drawing = true, string = lead .. charge .. "%", color = color },
 		})
 	end)
 end)

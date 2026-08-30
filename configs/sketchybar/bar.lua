@@ -1,22 +1,17 @@
 local colors = require("colors")
+local layout = require("settings").layout
 
 sbar.bar({
   topmost = "window",
   position = "top",
-  height = 32,
-  color = true and colors.bar.bg or colors.transparent,
+  height = layout.bar_height,
+  color = colors.bar.bg,
   border_width = 0,
-  border_color = colors.bar.border,
-  padding_left = 8,
-  padding_right = 8,
-
-  margin = 6,
-
-  corner_radius = 8,
-
-  blur_radius = true and (colors.bar.blur or 0) or 0,
+  padding_left = layout.bar_padding,
+  padding_right = layout.bar_padding,
+  corner_radius = layout.group_radius,
+  blur_radius = 0,
   shadow = true,
-  y_offset = true and 8 or 6,
-  margin = 128,
+  y_offset = layout.bar_offset,
   sticky = true,
 })

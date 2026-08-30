@@ -3,21 +3,32 @@ local settings = require("settings")
 local app_icons = require("helpers.app_icons")
 local backend = require("items.spaces_a")
 
-local MAX_SLOTS = 16
+local MAX_SLOTS = 10
 local pill_height = 19
 local pill_padding = {
-	active_empty = 24, -- focused workspace with no apps
-	active_icons = 18, -- focused workspace with apps (padding around the app icons)
+	active_empty = 8,
+	active_icons = 8,
 }
 local inactive_number_color = colors.text
-local number_icon_gap = 6
+local japanese_numbers = {
+	["1"] = "一",
+	["2"] = "二",
+	["3"] = "三",
+	["4"] = "四",
+	["5"] = "五",
+	["6"] = "六",
+	["7"] = "七",
+	["8"] = "八",
+	["9"] = "九",
+	["10"] = "十",
+}
 
-local slots = {} -- slot index -> sbar item
-local slot_ws = {} -- slot index -> workspace id currently shown there (or nil)
-local slot_state = {} -- slot index -> last rendered state key
-local slot_drawn = {} -- slot index -> whether the pill was visible
-local slot_base_color = {} -- slot index -> pill's current *state* bg colour
-local slot_hovered = {} -- slot index -> pointer is currently over the pill
+local slots = {}
+local slot_ws = {}
+local slot_state = {}
+local slot_drawn = {}
+local slot_base_color = {}
+local slot_hovered = {}
 local update_in_flight_at = 0
 local update_dirty = false
 local LOCK_TIMEOUT_S = 3
@@ -25,7 +36,7 @@ local LOCK_TIMEOUT_S = 3
 local function build_space_set(icons, selected, ws_label)
 	local has_icons = icons ~= ""
 	local should_draw = selected or has_icons
-	local show_number = ws_label ~= nil and ws_label ~= ""
+	local has_number = ws_label ~= nil and ws_label ~= ""
 
 	if not selected then
 		return {
@@ -37,16 +48,22 @@ local function build_space_set(icons, selected, ws_label)
 				padding_right = 0,
 			},
 			icon = {
-				string = show_number and ws_label or "",
+				string = has_number and ws_label or "",
+				font = {
+					family = settings.font.text,
+					style = settings.font.style_map["Semibold"],
+					size = 12,
+				},
 				color = inactive_number_color,
-				drawing = true,
+				drawing = has_number,
 				width = pill_height,
 				align = "center",
 				padding_left = 0,
 				padding_right = 0,
+				y_offset = 0,
 			},
 			background = {
-				color = colors.bg2,
+				color = colors.surface2,
 			},
 		}
 	end
@@ -58,41 +75,28 @@ local function build_space_set(icons, selected, ws_label)
 		pad = pill_padding.active_empty
 	end
 
-	-- The space character between glyphs has different vertical metrics
-	-- than the app icons themselves, which shifts multi-icon labels visually.
-	-- Compensate only when there is more than one icon.
-	local multi_icon = has_icons and icons:find(" ") ~= nil
-	local label_y = multi_icon and -1 or 0
-
-	local icon_padding_right
-	if has_icons and show_number then
-		icon_padding_right = number_icon_gap
-	elseif has_icons then
-		icon_padding_right = 0
-	else
-		icon_padding_right = pad
-	end
-
-	-- Active pill: width follows its content, so undo the fixed icon width the
-	-- inactive circle sets.
 	return {
 		drawing = true,
 		label = {
-			string = has_icons and icons or "",
-			color = colors.space_active_fg,
-			drawing = has_icons,
+			string = "",
+			drawing = false,
 			padding_left = 0,
-			padding_right = has_icons and pad or 0,
-			y_offset = label_y,
+			padding_right = 0,
 		},
 		icon = {
-			string = show_number and ws_label or "",
+			string = has_icons and icons or (has_number and ws_label or ""),
+			font = {
+				family = has_icons and settings.font.icons or settings.font.text,
+				style = has_icons and "Regular" or settings.font.style_map["Semibold"],
+				size = has_icons and 14.0 or 12,
+			},
 			color = colors.space_active_fg,
-			drawing = true,
+			drawing = has_icons or has_number,
 			width = "dynamic",
 			align = "center",
 			padding_left = pad,
-			padding_right = icon_padding_right,
+			padding_right = pad,
+			y_offset = 0,
 		},
 		background = {
 			color = colors.space_active,
@@ -111,7 +115,6 @@ local function update_all_spaces()
 	sbar.exec(backend.fetch_state_cmd(), function(output)
 		update_in_flight_at = 0
 
-		-- Three sections, "---" separated: windows, workspace list, focused id.
 		local workspace_icons = {}
 		local seen = {}
 		local workspaces = {}
@@ -146,9 +149,7 @@ local function update_all_spaces()
 			end
 		end
 
-		-- A backend hiccup (window manager restarting, IPC not yet up) yields an
-		-- empty list. Keep the current pills rather than blanking the bar; the
-		-- next tick recovers.
+		-- Keep the current state while Aerospace is restarting.
 		if #workspaces == 0 then
 			if update_dirty then
 				update_dirty = false
@@ -157,8 +158,6 @@ local function update_all_spaces()
 			return
 		end
 
-		-- Reconcile the slot pool against the live workspace list. Reassigning a
-		-- slot invalidates its cached state so the pill is rebuilt below.
 		for i = 1, MAX_SLOTS do
 			local ws = workspaces[i]
 			if slot_ws[i] ~= ws then
@@ -179,6 +178,7 @@ local function update_all_spaces()
 			if ws then
 				local icons = workspace_icons[ws] or ""
 				local selected = ws == focused
+				local display_label = backend.display_label(ws)
 				local key = (selected and "1|" or "0|") .. icons
 				if slot_state[i] ~= key then
 					local was_drawn = slot_drawn[i] or false
@@ -190,7 +190,7 @@ local function update_all_spaces()
 						space = slots[i],
 						icons = icons,
 						selected = selected,
-						label = backend.display_label(ws),
+						label = japanese_numbers[display_label] or display_label,
 						drawing_flipped = was_drawn ~= now_drawn,
 					}
 				end
@@ -198,22 +198,10 @@ local function update_all_spaces()
 		end
 
 		if #changed > 0 then
-			-- Layout changes (drawing, padding, label.string) apply instantly
-			-- so the bracket bg never gets caught half-resized when a second
-			-- switch arrives mid-animation. The space_active ↔ bg2 background color
-			-- still animates so the active-state swap reads as smooth.
-			-- Skip the color animation when drawing flipped — animating from
-			-- the prior color to space_active on a workspace that just appeared
-			-- causes a visible bg2 flash on the first frame.
 			local to_animate = {}
 			for _, c in ipairs(changed) do
 				local props = build_space_set(c.icons, c.selected, c.label)
 
-				-- Remember the state colour separately from the colour actually
-				-- shown: if the pointer is sitting on this pill while its state
-				-- changes, it must land on the brightened variant, and
-				-- mouse.exited must later restore the state colour, not the
-				-- brightened one.
 				local base = props.background.color
 				slot_base_color[c.slot] = base
 				local shown = slot_hovered[c.slot] and colors.brighten(base, colors.hover_amount) or base
@@ -243,33 +231,20 @@ local function update_all_spaces()
 	end)
 end
 
--- Create the pool up front, all hidden, so every slot is inside bracket.left
--- when items/init.lua builds it. Slots stay unnamed by workspace: the mapping
--- lives in slot_ws and is rewritten whenever the workspace set changes.
 for i = 1, MAX_SLOTS do
 	local space = sbar.add("item", "space.slot." .. i, {
 		icon = {
-			font = { family = settings.font.text, style = settings.font.style_map["Bold"], size = 12 },
+			font = { family = settings.font.text, style = settings.font.style_map["Semibold"], size = 12 },
 			string = "",
-			color = colors.white,
+			color = colors.text,
 			padding_left = 9,
 			padding_right = 9,
 			y_offset = 0,
 			drawing = true,
 		},
-		label = {
-			string = "",
-			font = "sketchybar-app-font:Regular:14.0",
-			color = colors.base,
-			padding_left = 0,
-			padding_right = 0,
-			y_offset = -1,
-			drawing = false,
-		},
+		label = { drawing = false },
 		background = {
-			color = colors.bg2,
-			-- >= pill_height/2 so both the wide active pill and the square
-			-- inactive one come out fully rounded.
+			color = colors.surface2,
 			corner_radius = math.ceil(pill_height / 2),
 			height = pill_height,
 		},
@@ -278,13 +253,8 @@ for i = 1, MAX_SLOTS do
 		drawing = false,
 	})
 
-	-- Hover brightens the pill's current state colour. It can't use
-	-- utils.hover_brighten, which assumes a fixed base: background.color here is
-	-- state (space_active when focused, bg2 otherwise) and is rewritten on every
-	-- workspace switch, so hover has to read the live value out of
-	-- slot_base_color rather than capturing one at setup.
 	local index = i
-	slot_base_color[i] = colors.bg2
+	slot_base_color[i] = colors.surface2
 	space:subscribe("mouse.entered", function()
 		slot_hovered[index] = true
 		space:set({
@@ -299,10 +269,8 @@ for i = 1, MAX_SLOTS do
 	slots[i] = space
 end
 
--- Invisible spacer that extends the left bracket background past the last space,
--- adding visual padding on the right end of the spaces pill.
 sbar.add("item", "spaces.right_pad", {
-	width = 0,
+	width = 3,
 	icon = { drawing = false },
 	label = { drawing = false },
 	background = { drawing = false },
@@ -311,31 +279,14 @@ sbar.add("item", "spaces.right_pad", {
 local observer = sbar.add("item", {
 	drawing = false,
 	updates = true,
-	update_freq = 5,
+	update_freq = 10,
 })
 
--- routine fires every update_freq seconds — backstop against window manager
--- state changes (move-window, window close on inactive workspace, etc.) that
--- don't trigger one of the push events the backend lists.
 local subscribed_events = { "routine" }
 for _, ev in ipairs(backend.events) do
 	subscribed_events[#subscribed_events + 1] = ev
 end
--- Backends that push events via a helper process expose ensure_watcher() to
--- respawn it if it died (OmniWM rotates its IPC token on restart, which kills
--- the watcher). Piggy-backs on the routine tick, throttled — the check is a
--- process spawn, and the 5s routine is already the fallback if it has died.
-local WATCH_CHECK_INTERVAL_S = 30
-local last_watch_check = os.time()
-
-observer:subscribe(subscribed_events, function(env)
-	if backend.ensure_watcher then
-		local now = os.time()
-		if now - last_watch_check >= WATCH_CHECK_INTERVAL_S then
-			last_watch_check = now
-			backend.ensure_watcher()
-		end
-	end
+observer:subscribe(subscribed_events, function()
 	update_all_spaces()
 end)
 

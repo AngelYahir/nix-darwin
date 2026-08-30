@@ -10,7 +10,7 @@ local wifi = sbar.add("item", "widgets.wifi", {
 			style = settings.font.style_map["Bold"],
 			size = 14.0,
 		},
-		color = colors.grey,
+		color = colors.overlay0,
 		padding_left = 8,
 		padding_right = 4,
 	},
@@ -24,7 +24,7 @@ local function update()
 		wifi:set({
 			icon = {
 				string = connected and icons.wifi.connected or icons.wifi.disconnected,
-				color = connected and colors.rose or colors.grey,
+				color = connected and colors.rosewater or colors.overlay0,
 			},
 		})
 	end)

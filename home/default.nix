@@ -4,10 +4,12 @@
     ...
 }:
 {
-    imports = [ 
+    imports = [
+        inputs.sops-nix.homeManagerModules.sops
         inputs.catppuccin.homeModules.catppuccin  
 
         ./packages.nix
+        ../configs/sops.nix
         ../configs/git.nix
         ../configs/zsh.nix
         ../configs/ghostty.nix

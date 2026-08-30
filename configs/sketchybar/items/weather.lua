@@ -3,7 +3,7 @@ local colors = require("colors")
 
 local WTTR_URL = "https://wttr.in/?format=%t&m"
 
-local weather = sbar.add("item", "center.weather", {
+local weather = sbar.add("item", "widgets.weather", {
 	position = "center",
 	icon = {
 		string = "􀆭",
@@ -18,7 +18,7 @@ local weather = sbar.add("item", "center.weather", {
 	},
 	label = {
 		string = "--°",
-		color = colors.white,
+		color = colors.text,
 		padding_left = 2,
 		padding_right = 6,
 		font = {
@@ -30,11 +30,6 @@ local weather = sbar.add("item", "center.weather", {
 	update_freq = 1800,
 })
 
--- wttr.in goes down, and the laptop goes offline. Neither used to be visible:
--- a failed fetch simply left the last good temperature on screen forever, so a
--- reading from yesterday looked exactly like one from a minute ago. Track the
--- last success and fade the widget once it's older than STALE_AFTER_S, so a
--- stale number reads as stale instead of silently lying.
 local STALE_AFTER_S = 2 * 60 * 60
 local STALE_ALPHA = 0.35
 local last_ok = nil
@@ -47,7 +42,7 @@ local function set_stale(stale)
 	showing_stale = stale
 	weather:set({
 		icon = { color = stale and colors.with_alpha(colors.accent, STALE_ALPHA) or colors.accent },
-		label = { color = stale and colors.with_alpha(colors.white, STALE_ALPHA) or colors.white },
+		label = { color = stale and colors.with_alpha(colors.text, STALE_ALPHA) or colors.text },
 	})
 end
 

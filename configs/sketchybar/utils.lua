@@ -31,7 +31,6 @@ function M.hover_lift(item, opts)
 	end)
 end
 
--- base is the item's normal background colour; hover lifts it toward white.
 function M.hover_brighten(item, base)
 	local lit = colors.brighten(base, colors.hover_amount)
 

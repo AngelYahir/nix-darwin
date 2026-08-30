@@ -21,7 +21,7 @@ local volume = sbar.add("item", "widgets.volume", {
 			style = settings.font.style_map["Bold"],
 			size = 12.0,
 		},
-		color = colors.white,
+		color = colors.text,
 		padding_right = 0,
 	},
 	updates = true,

@@ -13,7 +13,7 @@
                 inner.vertical = 6;
 
                 outer = {
-                    top = 36;
+                    top = 44;
 
                     right = 8;
                     bottom = 8;

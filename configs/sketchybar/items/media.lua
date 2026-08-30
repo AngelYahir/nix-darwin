@@ -2,45 +2,56 @@ local utils = require("utils")
 local colors = require("colors")
 local settings = require("settings")
 local icons = require("icons")
+local layout = settings.layout
 
--- For position="center", earlier-added items render to the LEFT.
--- Bar layout: playpause → artwork → title
+local CIDER_URL = "http://127.0.0.1:10767/api/v1/playback"
+local CIDER_AUTH = [[
+cider_token=$(yq -r '.connectivity.apiTokens[]? | select(.name == "SketchyBar") | .token' "$HOME/Library/Application Support/sh.cider.genten/spa-config.yml")
+[ -n "$cider_token" ] || exit 1
+]]
+local CIDER_STATUS = CIDER_AUTH
+	.. string.format(
+		[[
+now_playing=$(curl -fsS --max-time 2 -H "apptoken: $cider_token" %q) || exit 1
+play_state=$(curl -fsS --max-time 2 -H "apptoken: $cider_token" %q) || exit 1
+playing=$(printf '%%s' "$play_state" | jq -r '.is_playing // false')
+printf '%%s' "$now_playing" | jq -r --arg playing "$playing" '.info | [.name // "", .artistName // "", $playing, .artwork.url // ""] | .[]'
+]],
+		CIDER_URL .. "/now-playing",
+		CIDER_URL .. "/is-playing"
+	)
 
 local playpause = sbar.add("item", "center.media.playpause", {
 	position = "center",
+	width = 24,
 	icon = {
 		string = icons.media.play,
 		font = {
 			family = settings.font.text,
 			style = settings.font.style_map["Bold"],
-			size = 13,
+			size = 14,
 		},
 		color = colors.with_alpha(colors.accent, 0.45),
-		padding_left = 4,
-		padding_right = 4,
+		padding_left = 6,
+		padding_right = 6,
 	},
 	label = { drawing = false },
-	click_script = "nowplaying-cli togglePlayPause",
 })
 
 local artwork = sbar.add("item", "center.media.artwork", {
 	position = "center",
+	width = layout.media_artwork_size,
 	background = {
-		image = {
-			string = "",
-			scale = 0.23,
-			corner_radius = 4,
-		},
+		image = { string = "", scale = 0.25, corner_radius = 5 },
 		color = colors.transparent,
-		border_width = 0,
-		height = 22,
-		corner_radius = 4,
+		height = layout.media_artwork_size,
+		corner_radius = 5,
 	},
 	icon = { drawing = false },
 	label = { drawing = false },
 	drawing = false,
-	padding_left = 4,
-	padding_right = 2,
+	padding_left = 3,
+	padding_right = 3,
 })
 
 local media = sbar.add("item", "center.media", {
@@ -48,16 +59,17 @@ local media = sbar.add("item", "center.media", {
 	icon = { drawing = false },
 	scroll_texts = false,
 	label = {
-		string = "It's pretty silent",
+		string = "No media playing",
+		width = layout.media_width,
+		align = "left",
 		font = {
 			family = settings.font.text,
 			style = settings.font.style_map["Bold"],
-			size = 12,
+			size = 13,
 		},
-		-- color = colors.with_alpha(colors.white, 0.30),
-		color = colors.white,
-		padding_left = 4,
-		padding_right = 4,
+		color = colors.rosewater,
+		padding_left = 9,
+		padding_right = 10,
 	},
 	popup = {
 		align = "center",
@@ -70,27 +82,17 @@ local media = sbar.add("item", "center.media", {
 			height = 56,
 		},
 	},
-	-- DO NOT raise this to "let media_change do the work". It can't:
-	-- sketchybar's `media_change` never fires on macOS 26 (measured — zero
-	-- events across a pause and a play), because the MediaRemote now-playing
-	-- notification API it depends on is entitlement-gated on modern macOS.
-	-- Reading state still works, which is why nowplaying-cli does, but nothing
-	-- pushes. This poll is therefore the *only* thing keeping the label live,
-	-- and at 10s the lag was plainly visible.
-	--
-	-- The cost is smaller than the wall-clock time suggests: one call is ~100ms
-	-- wall but only ~10ms of CPU (the rest is IPC wait), so 1s ticks cost on the
-	-- order of 1% of one core.
-	update_freq = 1,
+	-- media_change is unreliable on recent macOS versions; polling is the fallback.
+	update_freq = 2,
 	updates = true,
 })
 
 local popup_artwork = sbar.add("item", "popup.center.media.art", {
 	position = "popup.center.media",
+	width = 48,
 	background = {
 		image = { string = "", scale = 0.5, corner_radius = 6 },
 		color = colors.transparent,
-		border_width = 0,
 		height = 48,
 		corner_radius = 6,
 	},
@@ -111,7 +113,7 @@ local popup_title = sbar.add("item", "popup.center.media.title", {
 			style = settings.font.style_map["Bold"],
 			size = 13,
 		},
-		color = 0xffffffff,
+		color = colors.rosewater,
 		padding_left = 4,
 		padding_right = 4,
 	},
@@ -127,7 +129,7 @@ local popup_artist = sbar.add("item", "popup.center.media.artist", {
 			style = settings.font.style_map["Bold"],
 			size = 12,
 		},
-		color = colors.with_alpha(colors.white, 0.55),
+		color = colors.with_alpha(colors.text, 0.55),
 		padding_left = 2,
 		padding_right = 10,
 	},
@@ -147,7 +149,6 @@ local popup_prev = sbar.add("item", "popup.center.media.prev", {
 		padding_right = 8,
 	},
 	label = { drawing = false },
-	click_script = "nowplaying-cli previous",
 })
 
 local popup_playpause = sbar.add("item", "popup.center.media.playpause", {
@@ -164,7 +165,6 @@ local popup_playpause = sbar.add("item", "popup.center.media.playpause", {
 		padding_right = 8,
 	},
 	label = { drawing = false },
-	click_script = "nowplaying-cli togglePlayPause",
 })
 
 local popup_next = sbar.add("item", "popup.center.media.next", {
@@ -181,36 +181,21 @@ local popup_next = sbar.add("item", "popup.center.media.next", {
 		padding_right = 12,
 	},
 	label = { drawing = false },
-	click_script = "nowplaying-cli next",
 })
-
--- Artwork is written to disk for sketchybar to load. This used to use a
--- monotonic counter (/tmp/sketchybar_art_1.jpg, _2, _3 ...) so that a slow
--- `nowplaying-cli` callback could never land on a path a newer track had already
--- overwritten — correct, but nothing ever deleted the old files, so /tmp grew by
--- one JPEG per track change forever (411 files / 2.1 MB when this was found).
---
--- Two alternating slots keep the same guarantee with a fixed footprint:
--- sketchybar loads the image into memory at set-time, so the only path that must
--- stay untouched is the one currently on screen, and a 2-slot ping-pong never
--- writes to that one. The glob below also sweeps up the legacy numbered files.
-os.execute("rm -f /tmp/sketchybar_art_*.jpg 2>/dev/null")
-
-local ART_SLOTS = { "/tmp/sketchybar_art_a.jpg", "/tmp/sketchybar_art_b.jpg" }
-local art_slot = 0
 
 local current_track_key = nil
 local last_label_state = nil
 local last_play_state = nil
+local active_source = nil
+local poll_in_flight = false
+local art_slot = 0
 
-local SHOW_ARTWORK = true
-local MAX_LABEL_CHARS = SHOW_ARTWORK and 20 or 24
+local MAX_LABEL_CHARS = layout.media_max_chars
+local ART_PATHS = {
+	"/tmp/sketchybar-media-art-a.png",
+	"/tmp/sketchybar-media-art-b.png",
+}
 
--- East-Asian "wide" codepoints (CJK, Hiragana/Katakana, Hangul, full-width
--- forms, …) render at roughly double the advance of a Latin glyph, so budget
--- the label by display columns rather than raw character count — otherwise a
--- Japanese title with the same character count is ~2x wider and overflows the
--- notch / grows the center pill.
 local function char_width(cp)
 	if
 		(cp >= 0x1100 and cp <= 0x115F) -- Hangul Jamo
@@ -243,7 +228,6 @@ local function truncate(s, n)
 	if display_width(s) <= n then
 		return s
 	end
-	-- Reserve one column for the ellipsis.
 	local budget = n - 1
 	local w = 0
 	local out = {}
@@ -258,20 +242,8 @@ local function truncate(s, n)
 	return table.concat(out) .. "…"
 end
 
--- U+2003 EM SPACE — invisible, ~"M"-width, so short titles still hold
--- close to the full pill width and the center pill stops shifting.
-local PAD_CHAR = "\xe2\x80\x83"
-
-local function pad_to(s, n)
-	local w = display_width(s)
-	if w < n then
-		return s .. string.rep(PAD_CHAR, n - w)
-	end
-	return s
-end
-
-local function update_track_info(title, artist)
-	local key = (title or "") .. "|" .. (artist or "")
+local function update_track_info(title, artist, source, artwork_url)
+	local key = source .. "|" .. (title or "") .. "|" .. (artist or "") .. "|" .. (artwork_url or "")
 	if key == current_track_key then
 		return
 	end
@@ -280,32 +252,42 @@ local function update_track_info(title, artist)
 	popup_title:set({ label = { string = title or "" } })
 	popup_artist:set({ label = { string = artist or "" } })
 
-	art_slot = art_slot % #ART_SLOTS + 1
-	local path = ART_SLOTS[art_slot]
-	local cmd = string.format(
-		"nowplaying-cli get artworkData 2>/dev/null | base64 -D > %q 2>/dev/null; "
-			.. "if [ -s %q ]; then sips -Z 96 %q >/dev/null 2>&1; echo ok; else rm -f %q; fi",
-		path,
-		path,
-		path,
-		path
-	)
-	sbar.exec(cmd, function(out)
+	if source == "cider" and (not artwork_url or artwork_url == "") then
+		artwork:set({ drawing = false })
+		popup_artwork:set({ drawing = false })
+		return
+	end
+
+	art_slot = art_slot % #ART_PATHS + 1
+	local path = ART_PATHS[art_slot]
+	local download = path .. ".download"
+	local ready = path .. ".ready.png"
+	local acquire
+	if source == "cider" then
+		acquire = string.format("curl -fsSL --max-time 5 %q -o %q", artwork_url, download)
+	else
+		acquire = string.format("nowplaying-cli get artworkData 2>/dev/null | base64 -D > %q", download)
+	end
+
+	local command = acquire
+		.. string.format(
+			" && sips -s format png -Z 96 %q --out %q >/dev/null 2>&1"
+				.. " && mv -f %q %q && rm -f %q && echo ok",
+			download,
+			ready,
+			ready,
+			path,
+			download
+		)
+
+	sbar.exec(command, function(out)
 		if current_track_key ~= key then
 			return
 		end
 		if out and out:match("ok") then
-			if SHOW_ARTWORK then
-				artwork:set({
-					drawing = true,
-					background = { image = { drawing = true, string = path } },
-					icon = { drawing = false },
-				})
-			end
-			popup_artwork:set({
-				drawing = true,
-				background = { image = { drawing = true, string = path } },
-			})
+			local image = { drawing = true, string = path }
+			artwork:set({ drawing = true, background = { image = image } })
+			popup_artwork:set({ drawing = true, background = { image = image } })
 		else
 			artwork:set({ drawing = false })
 			popup_artwork:set({ drawing = false })
@@ -313,32 +295,9 @@ local function update_track_info(title, artist)
 	end)
 end
 
-local function show_idle_artwork()
-	if not SHOW_ARTWORK then
-		artwork:set({ drawing = false })
-		return
-	end
-	artwork:set({
-		drawing = true,
-		background = { image = { drawing = false } },
-		icon = {
-			drawing = true,
-			string = ":music:",
-			font = {
-				family = "sketchybar-app-font",
-				style = "Regular",
-				size = 14.0,
-			},
-			color = colors.with_alpha(colors.accent, 0.45),
-			padding_left = 4,
-			padding_right = 4,
-		},
-	})
-end
-
 local function clear_track_info()
 	current_track_key = nil
-	show_idle_artwork()
+	artwork:set({ drawing = false })
 	popup_artwork:set({ drawing = false })
 	popup_title:set({ label = { string = "" } })
 	popup_artist:set({ label = { string = "" } })
@@ -356,13 +315,12 @@ local function set_play_icon(playing)
 end
 
 local function set_label(text, faded, animate)
-	text = pad_to(text, MAX_LABEL_CHARS)
 	local key = (faded and "f|" or "n|") .. text
 	if key == last_label_state then
 		return
 	end
 	last_label_state = key
-	local color = faded and colors.with_alpha(colors.white, faded) or 0xffffffff
+	local color = faded and colors.with_alpha(colors.rosewater, faded) or colors.rosewater
 	if animate then
 		sbar.animate("tanh", 10, function()
 			media:set({ label = { string = text, color = color } })
@@ -373,38 +331,93 @@ local function set_label(text, faded, animate)
 end
 
 local function set_idle()
+	active_source = nil
 	clear_track_info()
 	set_play_icon(false)
-	set_label("It's pretty silent in here...", 0.5, true)
+	set_label("No media playing", 0.5, true)
 end
 
-local function set_track(title, artist, playing)
+local function set_track(title, artist, playing, source, artwork_url)
 	local display = truncate(title .. (artist ~= "" and (" – " .. artist) or ""), MAX_LABEL_CHARS)
 
-	update_track_info(title, artist)
+	active_source = source
+	update_track_info(title, artist, source, artwork_url)
 	set_play_icon(playing)
 	set_label(display, not playing and 0.5 or false, true)
 end
 
-local function poll()
+-- MediaRemote is system-wide: this covers every app and browser that publishes
+-- a macOS Now Playing session, without maintaining a browser allowlist.
+local function poll_system_media(fallback)
 	sbar.exec("nowplaying-cli get playbackRate title artist", function(out)
 		local rate_str, title, artist = out:match("([^\n]*)\n([^\n]*)\n([^\n]*)")
 		local rate = tonumber(rate_str) or 0
 		title = title and title:gsub("^%s*(.-)%s*$", "%1") or ""
 		artist = artist and artist:gsub("^%s*(.-)%s*$", "%1") or ""
+		if artist == "null" then
+			artist = ""
+		end
 
 		if title ~= "" and title ~= "null" then
-			set_track(title, artist, rate > 0)
+			set_track(title, artist, rate > 0, "system")
 		else
-			set_idle()
+			fallback()
 		end
+		poll_in_flight = false
 	end)
 end
 
-local function poll_after(cmd)
-	sbar.exec(cmd, function()
+local function poll()
+	if poll_in_flight then
+		return
+	end
+	poll_in_flight = true
+
+	sbar.exec(CIDER_STATUS, function(out)
+		local title, artist, playing, artwork_url = out:match("^([^\n]*)\n([^\n]*)\n([^\n]*)\n([^\n]*)")
+		title = title or ""
+		artist = artist or ""
+		local cider_available = title ~= ""
+
+		if cider_available and playing == "true" then
+			set_track(title, artist, true, "cider", artwork_url)
+			poll_in_flight = false
+			return
+		end
+
+		poll_system_media(function()
+			if cider_available then
+				set_track(title, artist, false, "cider", artwork_url)
+			else
+				set_idle()
+			end
+		end)
+	end)
+end
+
+local native_actions = {
+	playpause = "togglePlayPause",
+	previous = "previous",
+	next = "next",
+}
+
+local function control_command(action)
+	if active_source == "cider" then
+		return CIDER_AUTH
+			.. string.format(
+				[[curl -fsS --max-time 2 -X POST -H "apptoken: $cider_token" -H "Content-Type: application/json" -d '{}' %q >/dev/null]],
+				CIDER_URL .. "/" .. action
+			)
+	end
+	return "nowplaying-cli " .. native_actions[action]
+end
+
+local function poll_after(action)
+	sbar.exec(control_command(action), function()
+		poll_in_flight = false
 		poll()
 		sbar.exec("sleep 0.4 && true", function()
+			poll_in_flight = false
 			poll()
 		end)
 	end)
@@ -428,16 +441,16 @@ local function optimistic_toggle()
 			set_label(text, not now_playing and 0.45 or false, false)
 		end
 	end
-	poll_after("nowplaying-cli togglePlayPause")
+	poll_after("playpause")
 end
 
 playpause:subscribe("mouse.clicked", optimistic_toggle)
 popup_playpause:subscribe("mouse.clicked", optimistic_toggle)
 popup_prev:subscribe("mouse.clicked", function()
-	poll_after("nowplaying-cli previous")
+	poll_after("previous")
 end)
 popup_next:subscribe("mouse.clicked", function()
-	poll_after("nowplaying-cli next")
+	poll_after("next")
 end)
 
 media:subscribe("mouse.exited.global", function()
@@ -446,10 +459,6 @@ end)
 
 poll()
 
--- All three of these toggle the popup, so all three get the same hover chip.
--- The artwork's chip is mostly covered once album art loads, but its neighbours
--- lighting up already reads as "this group is clickable" — and while idle (the
--- :music: glyph, no image) the chip behind it shows through.
-utils.hover_lift(playpause, { height = 22, corner_radius = 11 })
-utils.hover_lift(media, { height = 22, corner_radius = 6 })
-utils.hover_lift(artwork, { height = 22, corner_radius = 4 })
+utils.hover_lift(playpause, { height = 24, corner_radius = 7 })
+utils.hover_lift(media, { height = 24, corner_radius = 7 })
+utils.hover_lift(artwork, { height = 24, corner_radius = 5 })
