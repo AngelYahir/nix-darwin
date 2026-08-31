@@ -21,7 +21,6 @@
         zoxide
         bat
         neovim
-        fastfetch
 
         #monitoring
         btop
@@ -41,5 +40,7 @@
         #archives
         unzip
         zip
+
+        pngpaste
     ];
 }

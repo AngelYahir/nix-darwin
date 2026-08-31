@@ -11,6 +11,11 @@
 
             [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
             [ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"
+
+            pasteimg() {
+                local name="''${1:-screenshot-$(date +%Y-%m-%d_%H-%M-%S).png}"
+                pngpaste "$name"
+            }
         '';
 
         # Shell aliases

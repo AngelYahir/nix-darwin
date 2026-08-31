@@ -15,6 +15,7 @@
         ../configs/ghostty.nix
         ../configs/sketchybar.nix
         ../configs/starship.nix
+        ../configs/fastfetch.nix
         ../configs/zellij.nix
         ../configs/zen.nix
         ../configs/yazi.nix
