@@ -6,20 +6,53 @@ local layout = settings.layout
 
 local CIDER_URL = "http://127.0.0.1:10767/api/v1/playback"
 local CIDER_AUTH = [[
-cider_token=$(yq -r '.connectivity.apiTokens[]? | select(.name == "SketchyBar") | .token' "$HOME/Library/Application Support/sh.cider.genten/spa-config.yml")
+cider_token=$(yq -r '.connectivity.apiTokens[]? | select(.name == "SketchyBar") | .token' "$HOME/Library/Application Support/sh.cider.genten/spa-config.yml" 2>/dev/null)
 [ -n "$cider_token" ] || exit 1
 ]]
 local CIDER_STATUS = CIDER_AUTH
 	.. string.format(
 		[[
-now_playing=$(curl -fsS --max-time 2 -H "apptoken: $cider_token" %q) || exit 1
-play_state=$(curl -fsS --max-time 2 -H "apptoken: $cider_token" %q) || exit 1
+now_playing=$(curl -fs --max-time 2 -H "apptoken: $cider_token" %q 2>/dev/null) || exit 1
+play_state=$(curl -fs --max-time 2 -H "apptoken: $cider_token" %q 2>/dev/null) || exit 1
 playing=$(printf '%%s' "$play_state" | jq -r '.is_playing // false')
 printf '%%s' "$now_playing" | jq -r --arg playing "$playing" '.info | [.name // "", .artistName // "", $playing, .artwork.url // ""] | .[]'
 ]],
 		CIDER_URL .. "/now-playing",
 		CIDER_URL .. "/is-playing"
 	)
+
+local spectrum_command = "sketchybar-media-spectrum"
+local marquee_command = "sketchybar-media-marquee"
+
+local function add_spectrum(name, color, label_padding_left, label_padding_right)
+	return sbar.add("item", name, {
+		position = "center",
+		drawing = false,
+		width = layout.media_spectrum_width,
+		background = {
+			color = colors.base,
+			height = layout.media_group_height,
+		},
+		icon = { drawing = false },
+		label = {
+			string = "▁▁▁▁▁",
+			align = "center",
+			font = {
+				family = settings.font.numbers,
+				style = settings.font.style_map["Semibold"],
+				size = 9,
+			},
+			color = color,
+			padding_left = label_padding_left,
+			padding_right = label_padding_right,
+		},
+		padding_left = 1,
+		padding_right = 1,
+	})
+end
+
+local spectrum_left = add_spectrum("center.media.spectrum.left", colors.sky, 3, 10)
+local spectrum_right = nil
 
 local playpause = sbar.add("item", "center.media.playpause", {
 	position = "center",
@@ -56,11 +89,12 @@ local artwork = sbar.add("item", "center.media.artwork", {
 
 local media = sbar.add("item", "center.media", {
 	position = "center",
+	width = layout.media_width,
 	icon = { drawing = false },
 	scroll_texts = false,
 	label = {
 		string = "No media playing",
-		width = layout.media_width,
+		max_chars = layout.media_max_chars,
 		align = "left",
 		font = {
 			family = settings.font.text,
@@ -68,8 +102,8 @@ local media = sbar.add("item", "center.media", {
 			size = 13,
 		},
 		color = colors.rosewater,
-		padding_left = 9,
-		padding_right = 10,
+		padding_left = 7,
+		padding_right = 7,
 	},
 	popup = {
 		align = "center",
@@ -186,61 +220,15 @@ local popup_next = sbar.add("item", "popup.center.media.next", {
 local current_track_key = nil
 local last_label_state = nil
 local last_play_state = nil
+local last_spectrum_state = nil
 local active_source = nil
 local poll_in_flight = false
 local art_slot = 0
 
-local MAX_LABEL_CHARS = layout.media_max_chars
 local ART_PATHS = {
 	"/tmp/sketchybar-media-art-a.png",
 	"/tmp/sketchybar-media-art-b.png",
 }
-
-local function char_width(cp)
-	if
-		(cp >= 0x1100 and cp <= 0x115F) -- Hangul Jamo
-		or (cp >= 0x2E80 and cp <= 0x303E) -- CJK radicals, Kangxi, punctuation
-		or (cp >= 0x3041 and cp <= 0x33FF) -- Hiragana, Katakana, CJK symbols
-		or (cp >= 0x3400 and cp <= 0x4DBF) -- CJK Ext A
-		or (cp >= 0x4E00 and cp <= 0x9FFF) -- CJK Unified
-		or (cp >= 0xA000 and cp <= 0xA4CF) -- Yi
-		or (cp >= 0xAC00 and cp <= 0xD7A3) -- Hangul syllables
-		or (cp >= 0xF900 and cp <= 0xFAFF) -- CJK compatibility
-		or (cp >= 0xFE30 and cp <= 0xFE4F) -- CJK compatibility forms
-		or (cp >= 0xFF00 and cp <= 0xFF60) -- Fullwidth forms
-		or (cp >= 0xFFE0 and cp <= 0xFFE6) -- Fullwidth signs
-		or (cp >= 0x20000 and cp <= 0x3FFFD) -- CJK Ext B+
-	then
-		return 2
-	end
-	return 1
-end
-
-local function display_width(s)
-	local w = 0
-	for _, cp in utf8.codes(s) do
-		w = w + char_width(cp)
-	end
-	return w
-end
-
-local function truncate(s, n)
-	if display_width(s) <= n then
-		return s
-	end
-	local budget = n - 1
-	local w = 0
-	local out = {}
-	for _, cp in utf8.codes(s) do
-		local cw = char_width(cp)
-		if w + cw > budget then
-			break
-		end
-		w = w + cw
-		out[#out + 1] = utf8.char(cp)
-	end
-	return table.concat(out) .. "…"
-end
 
 local function update_track_info(title, artist, source, artwork_url)
 	local key = source .. "|" .. (title or "") .. "|" .. (artist or "") .. "|" .. (artwork_url or "")
@@ -264,9 +252,12 @@ local function update_track_info(title, artist, source, artwork_url)
 	local ready = path .. ".ready.png"
 	local acquire
 	if source == "cider" then
-		acquire = string.format("curl -fsSL --max-time 5 %q -o %q", artwork_url, download)
+		acquire = string.format("curl -fsL --max-time 5 %q -o %q 2>/dev/null", artwork_url, download)
 	else
-		acquire = string.format("nowplaying-cli get artworkData 2>/dev/null | base64 -D > %q", download)
+		acquire = string.format(
+			"nowplaying-cli get artworkData 2>/dev/null | base64 --decode > %q 2>/dev/null",
+			download
+		)
 	end
 
 	local command = acquire
@@ -303,7 +294,21 @@ local function clear_track_info()
 	popup_artist:set({ label = { string = "" } })
 end
 
+local function set_spectrum_active(playing)
+	if playing == last_spectrum_state then
+		return
+	end
+	last_spectrum_state = playing
+
+	spectrum_left:set({ drawing = playing })
+	if spectrum_right then
+		spectrum_right:set({ drawing = playing })
+	end
+	sbar.exec(spectrum_command .. (playing and " start" or " stop"))
+end
+
 local function set_play_icon(playing)
+	set_spectrum_active(playing)
 	if playing == last_play_state then
 		return
 	end
@@ -319,14 +324,32 @@ local function set_label(text, faded, animate)
 	if key == last_label_state then
 		return
 	end
+	local previous_text = last_label_state and last_label_state:sub(3) or nil
+	local text_changed = text ~= previous_text
 	last_label_state = key
 	local color = faded and colors.with_alpha(colors.rosewater, faded) or colors.rosewater
+	local label = { color = color }
+	if text_changed then
+		label.string = text
+	end
 	if animate then
 		sbar.animate("tanh", 10, function()
-			media:set({ label = { string = text, color = color } })
+			media:set({ label = label })
 		end)
 	else
-		media:set({ label = { string = text, color = color } })
+		media:set({ label = label })
+	end
+
+	if text_changed then
+		local length = 0
+		for _ in utf8.codes(text) do
+			length = length + 1
+		end
+		if length > layout.media_max_chars then
+			sbar.exec(string.format("%s start %q %d", marquee_command, text, layout.media_max_chars))
+		else
+			sbar.exec(marquee_command .. " stop")
+		end
 	end
 end
 
@@ -338,7 +361,7 @@ local function set_idle()
 end
 
 local function set_track(title, artist, playing, source, artwork_url)
-	local display = truncate(title .. (artist ~= "" and (" – " .. artist) or ""), MAX_LABEL_CHARS)
+	local display = title .. (artist ~= "" and (" – " .. artist) or "")
 
 	active_source = source
 	update_track_info(title, artist, source, artwork_url)
@@ -405,7 +428,7 @@ local function control_command(action)
 	if active_source == "cider" then
 		return CIDER_AUTH
 			.. string.format(
-				[[curl -fsS --max-time 2 -X POST -H "apptoken: $cider_token" -H "Content-Type: application/json" -d '{}' %q >/dev/null]],
+				[[curl -fs --max-time 2 -X POST -H "apptoken: $cider_token" -H "Content-Type: application/json" -d '{}' %q >/dev/null 2>&1]],
 				CIDER_URL .. "/" .. action
 			)
 	end
@@ -437,7 +460,6 @@ local function optimistic_toggle()
 		set_play_icon(now_playing)
 		if last_label_state then
 			local text = last_label_state:sub(3)
-			last_label_state = nil
 			set_label(text, not now_playing and 0.45 or false, false)
 		end
 	end
@@ -462,3 +484,13 @@ poll()
 utils.hover_lift(playpause, { height = 24, corner_radius = 7 })
 utils.hover_lift(media, { height = 24, corner_radius = 7 })
 utils.hover_lift(artwork, { height = 24, corner_radius = 5 })
+
+return {
+	add_right_spectrum = function()
+		if spectrum_right then
+			return
+		end
+		spectrum_right = add_spectrum("center.media.spectrum.right", colors.mauve, 10, 3)
+		spectrum_right:set({ drawing = last_spectrum_state == true })
+	end,
+}

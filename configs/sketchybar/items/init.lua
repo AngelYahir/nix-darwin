@@ -3,9 +3,10 @@ local layout = require("settings").layout
 
 require("items.apple")
 require("items.spaces")
-require("items.media")
+local media = require("items.media")
 require("items.weather")
 require("items.calendar")
+media.add_right_spectrum()
 
 require("items.widgets.battery")
 require("items.widgets.volume")
