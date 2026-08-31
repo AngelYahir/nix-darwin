@@ -230,6 +230,56 @@ local ART_PATHS = {
 	"/tmp/sketchybar-media-art-b.png",
 }
 
+local function codepoint_width(codepoint)
+	if codepoint == 0x200D
+		or (codepoint >= 0x0300 and codepoint <= 0x036F)
+		or (codepoint >= 0xFE00 and codepoint <= 0xFE0F)
+	then
+		return 0
+	end
+
+	if (codepoint >= 0x1100 and codepoint <= 0x115F)
+		or codepoint == 0x2329
+		or codepoint == 0x232A
+		or (codepoint >= 0x2E80 and codepoint <= 0xA4CF and codepoint ~= 0x303F)
+		or (codepoint >= 0xAC00 and codepoint <= 0xD7A3)
+		or (codepoint >= 0xF900 and codepoint <= 0xFAFF)
+		or (codepoint >= 0xFE10 and codepoint <= 0xFE19)
+		or (codepoint >= 0xFE30 and codepoint <= 0xFE6F)
+		or (codepoint >= 0xFF00 and codepoint <= 0xFF60)
+		or (codepoint >= 0xFFE0 and codepoint <= 0xFFE6)
+		or (codepoint >= 0x1F300 and codepoint <= 0x1FAFF)
+		or (codepoint >= 0x20000 and codepoint <= 0x3FFFD)
+	then
+		return 2
+	end
+
+	return 1
+end
+
+local function truncate_media_label(text)
+	local characters = {}
+	local widths = {}
+	local used_width = 0
+
+	for _, codepoint in utf8.codes(text) do
+		local width = codepoint_width(codepoint)
+		if used_width + width > layout.media_max_chars then
+			while used_width + 1 > layout.media_max_chars and #characters > 0 do
+				used_width = used_width - table.remove(widths)
+				table.remove(characters)
+			end
+			return table.concat(characters):gsub("%s+$", "") .. "…"
+		end
+
+		table.insert(characters, utf8.char(codepoint))
+		table.insert(widths, width)
+		used_width = used_width + width
+	end
+
+	return text
+end
+
 local function update_track_info(title, artist, source, artwork_url)
 	local key = source .. "|" .. (title or "") .. "|" .. (artist or "") .. "|" .. (artwork_url or "")
 	if key == current_track_key then
@@ -330,7 +380,7 @@ local function set_label(text, faded, animate)
 	local color = faded and colors.with_alpha(colors.rosewater, faded) or colors.rosewater
 	local label = { color = color }
 	if text_changed then
-		label.string = text
+		label.string = truncate_media_label(text)
 	end
 	if animate then
 		sbar.animate("tanh", 10, function()
@@ -341,15 +391,7 @@ local function set_label(text, faded, animate)
 	end
 
 	if text_changed then
-		local length = 0
-		for _ in utf8.codes(text) do
-			length = length + 1
-		end
-		if length > layout.media_max_chars then
-			sbar.exec(string.format("%s start %q %d", marquee_command, text, layout.media_max_chars))
-		else
-			sbar.exec(marquee_command .. " stop")
-		end
+		sbar.exec(marquee_command .. " stop")
 	end
 end
 

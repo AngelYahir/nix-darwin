@@ -28,7 +28,7 @@ return {
     media_group_height = 28,
     media_artwork_size = 24,
     media_width = 172,
-    media_max_chars = 24,
+    media_max_chars = 20,
     media_spectrum_width = 42,
   },
 }

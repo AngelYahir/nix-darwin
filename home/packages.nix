@@ -40,5 +40,7 @@
         #archives
         unzip
         zip
+
+        pngpaste
     ];
 }

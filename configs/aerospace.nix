@@ -1,6 +1,9 @@
 { pkgs, ... }:
 
 {
+    # Permite arrastrar ventanas desde cualquier punto con Ctrl+Cmd.
+    system.defaults.NSGlobalDomain.NSWindowShouldDragOnGesture = true;
+
     services.aerospace = {
         enable = true;
 
