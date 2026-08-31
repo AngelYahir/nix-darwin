@@ -21,7 +21,6 @@
         zoxide
         bat
         neovim
-        fastfetch
 
         #monitoring
         btop
