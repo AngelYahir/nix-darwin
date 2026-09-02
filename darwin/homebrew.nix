@@ -24,6 +24,8 @@
             "ghostty"
             "onlyoffice"
             "sf-symbols"
+            "chatgpt"
+            "threema@beta"
         ];
 
         onActivation = {

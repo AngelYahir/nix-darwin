@@ -41,6 +41,11 @@
         unzip
         zip
 
+        #images
         pngpaste
+        imagemagick
+        rembg
+        ffmpeg
+        exiftool
     ];
 }
