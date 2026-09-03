@@ -17,6 +17,7 @@
         ../configs/starship.nix
         ../configs/fastfetch.nix
         ../configs/zellij.nix
+        ../configs/obsidian.nix
         ../configs/zen.nix
         ../configs/yazi.nix
         ../configs/cava.nix

@@ -45,6 +45,7 @@
         builtins.elem (lib.getName pkg) [
         "claude-code"
         "github-copilot-cli"
+        "obsidian"
     ];
 
     nixpkgs.hostPlatform = "aarch64-darwin";
