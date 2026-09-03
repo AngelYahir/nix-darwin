@@ -1,4 +1,4 @@
-{ pkgs, ... }:
+{ inputs, pkgs, ... }:
 {
     home.packages = with pkgs; [
         #Unix
@@ -47,5 +47,27 @@
         rembg
         ffmpeg
         exiftool
+
+        #rust
+        rustc
+        cargo
+        rustfmt
+        clippy
+        rust-analyzer
+        cargo-watch
+        bacon
+
+        #go
+        go
+        gopls
+        delve
+        golangci-lint
+        air
+
+        #AI
+        claude-code
+        github-copilot-cli
+        codex
+        inputs.herdr.packages.${pkgs.system}.default
     ];
 }

@@ -26,6 +26,7 @@
             "sf-symbols"
             "chatgpt"
             "threema@beta"
+            "claude"
         ];
 
         onActivation = {

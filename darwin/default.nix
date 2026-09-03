@@ -1,4 +1,5 @@
 {
+    lib,
     pkgs,
     inputs,
     username,
@@ -38,6 +39,12 @@
         ../configs/aerospace.nix
         ../configs/fonts.nix
         ../configs/macos.nix
+    ];
+
+    nixpkgs.config.allowUnfreePredicate = pkg:
+        builtins.elem (lib.getName pkg) [
+        "claude-code"
+        "github-copilot-cli"
     ];
 
     nixpkgs.hostPlatform = "aarch64-darwin";

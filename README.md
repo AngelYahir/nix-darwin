@@ -16,7 +16,7 @@
   </p>
 </div>
 
-![Full desktop](./assets/screenshot-2026-08-30_20-59-51.png)
+![Full desktop](./assets/screenshot-2026-09-02_22-39-34.png)
 
 > [!IMPORTANT]
 > This repository is a personal configuration, not a universal installer. Before the first `switch`, you must change the username, hostname, age key, secrets, Zen profile, and monitor layout. Read [Required preparation](#required-preparation) first.

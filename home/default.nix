@@ -20,6 +20,9 @@
         ../configs/zen.nix
         ../configs/yazi.nix
         ../configs/cava.nix
+        ../configs/codex.nix
+        ../configs/agents
+        ../configs/assistants
 
         ../configs/wp.nix
     ];

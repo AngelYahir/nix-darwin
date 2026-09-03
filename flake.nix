@@ -21,6 +21,53 @@
 
     zjstatus.url = "github:dj95/zjstatus";
 
+    herdr.url = "github:herdrdev/herdr";
+
+    ponytail = {
+      url = "github:DietrichGebert/ponytail";
+      flake = false;
+    };
+
+    archify = {
+      url = "github:tt-a1i/archify";
+      flake = false;
+    };
+
+    context7 = {
+      url = "github:upstash/context7";
+      flake = false;
+    };
+
+    cursor-plugins = {
+      url = "github:cursor/plugins";
+      flake = false;
+    };
+
+    superpowers = {
+      url = "github:obra/superpowers";
+      flake = false;
+    };
+
+    repo-security-review = {
+      url = "github:Consensys/repo-security-review";
+      flake = false;
+    };
+
+    documentation = {
+      url = "github:mcollina/skills";
+      flake = false;
+    };
+
+    agent-skills = {
+      url = "github:magnus919/agent-skills";
+      flake = false;
+    };
+
+    compound-engineering = {
+      url = "github:EveryInc/compound-engineering-plugin";
+      flake = false;
+    };
+
     catppuccin-zen = {
       url = "github:catppuccin/zen-browser";
       flake = false;

@@ -25,6 +25,7 @@
             c = "clear";
             lc = "eza -a -l --icons --no-time --no-user --color=always";
             h = "z ~";
+            aiinit = "agent-project-init";
             # FZF aliases
             cdf = "cd \"$(fd -t d | fzf --preview \"eza --icons --long --level=3 --color=always {}\")\";";
             vf = "fzf -m --preview=\"bat --color=always --style=numbers,grid {}\" | xargs -r nvim";
