@@ -1,0 +1,35 @@
+[profiles.engineering]
+allowed_domains = ["work1", "work2", "personal"]
+allowed_types = ["architecture", "decision", "pattern", "lesson", "incident", "runbook", "reference", "sdk"]
+route = "project"
+
+[profiles.personal]
+allowed_domains = ["personal", "languages"]
+allowed_types = ["grammar", "vocabulary", "expression", "mistake", "listening", "reading", "culture", "reference"]
+route = "personal"
+
+[routing]
+projects = "Projects"
+
+[routing.domains]
+work1 = "Work/Work1"
+work2 = "Work/Work2"
+personal = "Personal"
+languages = "Languages"
+
+[routing.types]
+architecture = "Architecture"
+decision = "Decisions"
+pattern = "Patterns"
+lesson = "Lessons"
+incident = "Incidents"
+runbook = "Runbooks"
+reference = "Reference"
+sdk = "SDK"
+grammar = "Grammar"
+vocabulary = "Vocabulary"
+expression = "Expressions"
+mistake = "Mistakes"
+listening = "Listening"
+reading = "Reading"
+culture = "Culture"
