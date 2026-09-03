@@ -32,6 +32,7 @@
 | CLI | Neovim, Git, GitHub CLI, ripgrep, fd, fzf, zoxide, bat, eza, jq, yq, and more |
 | Media | CAVA, Now Playing, artwork, media controls, and optional Cider support |
 | Applications | Zen, Arc, VS Code, DataGrip, Raycast, Ghostty, ONLYOFFICE, and SF Symbols through Homebrew |
+| Agents | Claude Code, Codex, and Copilot with a Herdr workspace launcher and shared skills |
 | Secrets | SOPS + age for the Git name and email address |
 
 The configuration is split into two main layers:
@@ -40,6 +41,7 @@ The configuration is split into two main layers:
 - `home/` manages the user account, CLI programs, and configuration files.
 - `configs/` contains independent modules for each application.
 - `configs/sketchybar/` contains the Lua implementation of the bar.
+- `configs/agents/` contains the coding-agent tooling: MCP servers, shared skills, and the `project-agents` and `agent-project-init` commands.
 - `assets/` contains the screenshots used in this document.
 - `secrets/` contains SOPS-encrypted secrets; it must never contain private age keys.
 
@@ -327,6 +329,30 @@ The bar displays:
 - Wi-Fi, Bluetooth, volume, and battery status.
 
 The media widget first uses Cider's local API when it finds a token named `SketchyBar`; otherwise, it uses Now Playing sessions published by macOS. Cider is optional and is not installed by this configuration.
+
+### Coding agents
+
+![Claude, Codex, and Copilot in a Herdr workspace](./assets/screenshot-2026-09-03_13-31-16.png)
+
+`configs/agents/` installs Claude Code, Codex, and Copilot, points all three at the
+Context7 MCP server, and shares one set of skills between `~/.claude/skills/` and
+`~/.agents/skills/`.
+
+Two commands drive the workflow:
+
+| Command | Alias | Action |
+| --- | --- | --- |
+| `project-agents` | `agents` | Opens or re-attaches a three-pane [Herdr](https://github.com/herdrdev/herdr) workspace running Claude, Codex, and Copilot against the current project |
+| `agent-project-init` | `aiinit` | Copies the agent scaffolding (`.ai/`, `CLAUDE.md`, `AGENTS.md`, and the orchestration skills) into the current repository |
+
+`agents` is idempotent: it identifies the workspace by label and working directory,
+so running it again focuses the existing panes instead of creating duplicates, and
+restarts only the agents that are no longer alive. Run it from anywhere inside the
+repository; the panes open in the directory you launched it from.
+
+The scaffolding written by `aiinit` is agent memory, not documentation, and it is
+listed in `.gitignore`. Edit `.ai/PROJECT.md` first so the agents have project
+context.
 
 ### Wallpapers
 

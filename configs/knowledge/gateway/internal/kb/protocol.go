@@ -16,6 +16,7 @@ const maxRequestBytes = 8 << 20
 
 type Request struct {
 	Operation  string            `json:"operation"`
+	Vault      string            `json:"vault,omitempty"`
 	Profile    string            `json:"profile"`
 	KBID       string            `json:"kb_id"`
 	Title      string            `json:"title"`

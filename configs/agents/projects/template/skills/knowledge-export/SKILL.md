@@ -30,10 +30,14 @@ When orchestrating, let workers report candidates and have the orchestrator
 curate the final note. A worker may publish only when the user directly asked
 that worker to publish a specific item.
 
+Use vault alias `knowledge-base` by default. If the user explicitly asks for
+Second Brain instead, use `second-brain`. Never invent or pass filesystem paths.
+
 Write the proposed body to a temporary file or stdin, then run:
 
 ```sh
 kb-agent upsert \
+  --vault knowledge-base \
   --profile engineering \
   --project-auto \
   --id STABLE_KB_ID \
@@ -44,7 +48,8 @@ kb-agent upsert \
 
 Use a stable `kb_id`. Summarize canonical repository docs or ADRs and refer to
 them; do not copy them wholesale. The only successful output is publication
-metadata such as `published: ID` or `updated: ID`, never prior note content.
+metadata such as `published: ID (vault: knowledge-base)` or
+`updated: ID (vault: second-brain)`, never prior note content.
 
 This is an architectural boundary, not a claim that same-user macOS processes
 are technically unable to open the vault.

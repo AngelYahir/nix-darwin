@@ -1,7 +1,19 @@
-{ config, inputs, lib, ... }:
+{ config, inputs, lib, pkgs, ... }:
 
 let
     context7Url = "https://mcp.context7.com/mcp";
+    herdr = inputs.herdr.packages.${pkgs.stdenv.hostPlatform.system}.default;
+    projectAgents = pkgs.writeShellApplication {
+        name = "project-agents";
+        runtimeInputs = [
+            herdr
+            pkgs.git
+            pkgs.jq
+            pkgs.coreutils
+            pkgs.gnused
+        ];
+        text = builtins.readFile ./scripts/project-agents.sh;
+    };
 in
 
 {
@@ -17,6 +29,8 @@ in
             url = context7Url;
         };
     };
+
+    home.packages = [ projectAgents ];
 
     # Codex Desktop owns the rest of config.toml, so preserve it and add only
     # the missing server through the CLI instead of replacing the whole file.

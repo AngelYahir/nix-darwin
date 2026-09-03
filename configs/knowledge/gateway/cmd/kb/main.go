@@ -31,12 +31,19 @@ func run(args []string, stdout io.Writer) error {
 	switch args[0] {
 	case "init":
 		flags := quietFlags("kb init")
-		var vault string
+		var name, vault string
+		flags.StringVar(&name, "name", "", "vault alias")
 		flags.StringVar(&vault, "vault", "", "Obsidian vault path")
 		if err := flags.Parse(args[1:]); err != nil || flags.NArg() != 0 || vault == "" {
-			return errors.New("usage: kb init --vault PATH")
+			return errors.New("usage: kb init [--name ALIAS] --vault PATH")
 		}
-		if err := kb.WriteVaultRoot(paths.Local, vault); err != nil {
+		var err error
+		if name == "" {
+			err = kb.WriteVaultRoot(paths.Local, vault)
+		} else {
+			err = kb.RegisterVault(paths.Local, name, vault)
+		}
+		if err != nil {
 			return err
 		}
 		fmt.Fprintln(stdout, "vault configured")

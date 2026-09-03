@@ -2,10 +2,13 @@
   description = "Angel's personal configuration for macOS";
 
   inputs = {
+    # Core / system
     nixpkgs.url = "github:NixOS/nixpkgs/nixpkgs-unstable";
+
     # Zellij 0.45 adds Kitty graphics passthrough and stops advertising Sixel
     # when the host terminal (Ghostty) does not support it.
     nixpkgs-zellij.url = "github:NixOS/nixpkgs/nixpkgs-unstable";
+
     nix-darwin.url = "github:nix-darwin/nix-darwin/master";
     nix-darwin.inputs.nixpkgs.follows = "nixpkgs";
 
@@ -14,69 +17,41 @@
 
     nix-homebrew.url = "github:zhaofengli/nix-homebrew";
 
-    sops-nix = {
-      url = "github:Mic92/sops-nix";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
-
-    zjstatus.url = "github:dj95/zjstatus";
+    sops-nix.url = "github:Mic92/sops-nix";
+    sops-nix.inputs.nixpkgs.follows = "nixpkgs";
 
     herdr.url = "github:herdrdev/herdr";
 
-    ponytail = {
-      url = "github:DietrichGebert/ponytail";
-      flake = false;
-    };
+    # Desktop / theming
+    zjstatus.url = "github:dj95/zjstatus";
 
-    archify = {
-      url = "github:tt-a1i/archify";
-      flake = false;
-    };
+    catppuccin.url = "github:catppuccin/nix";
+    catppuccin.inputs.nixpkgs.follows = "nixpkgs";
 
-    context7 = {
-      url = "github:upstash/context7";
-      flake = false;
-    };
+    catppuccin-zen.url = "github:catppuccin/zen-browser";
+    catppuccin-zen.flake = false;
 
-    cursor-plugins = {
-      url = "github:cursor/plugins";
-      flake = false;
-    };
+    # Agent skills (non-flake sources)
+    ponytail.url = "github:DietrichGebert/ponytail";
+    ponytail.flake = false;
 
-    superpowers = {
-      url = "github:obra/superpowers";
-      flake = false;
-    };
+    archify.url = "github:tt-a1i/archify";
+    archify.flake = false;
 
-    repo-security-review = {
-      url = "github:Consensys/repo-security-review";
-      flake = false;
-    };
+    context7.url = "github:upstash/context7";
+    context7.flake = false;
 
-    documentation = {
-      url = "github:mcollina/skills";
-      flake = false;
-    };
+    cursor-plugins.url = "github:cursor/plugins";
+    cursor-plugins.flake = false;
 
-    agent-skills = {
-      url = "github:magnus919/agent-skills";
-      flake = false;
-    };
+    superpowers.url = "github:obra/superpowers";
+    superpowers.flake = false;
 
-    compound-engineering = {
-      url = "github:EveryInc/compound-engineering-plugin";
-      flake = false;
-    };
+    documentation.url = "github:mcollina/skills";
+    documentation.flake = false;
 
-    catppuccin-zen = {
-      url = "github:catppuccin/zen-browser";
-      flake = false;
-    };
-
-    catppuccin = {
-      url = "github:catppuccin/nix";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
+    agent-skills.url = "github:magnus919/agent-skills";
+    agent-skills.flake = false;
   };
 
   outputs = inputs@{ self, nix-darwin, nixpkgs, home-manager, nix-homebrew, zjstatus, catppuccin, ... }:

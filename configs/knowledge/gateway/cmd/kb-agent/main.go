@@ -26,6 +26,7 @@ func run(args []string, stdin io.Reader, stdout io.Writer) error {
 	var request kb.Request
 	var file, sourceRepo, sourceTask, sourceCommit string
 	var projectAuto bool
+	flags.StringVar(&request.Vault, "vault", "", "configured vault alias")
 	flags.StringVar(&request.Profile, "profile", "engineering", "publication profile")
 	flags.StringVar(&request.KBID, "id", "", "stable knowledge id")
 	flags.StringVar(&request.Title, "title", "", "note title")
@@ -95,6 +96,10 @@ func run(args []string, stdin io.Reader, stdout io.Writer) error {
 	if err != nil {
 		return err
 	}
-	_, err = fmt.Fprintf(stdout, "%s: %s\n", response.Result, response.KBID)
+	vault := request.Vault
+	if vault == "" {
+		vault = "default"
+	}
+	_, err = fmt.Fprintf(stdout, "%s: %s (vault: %s)\n", response.Result, response.KBID, vault)
 	return err
 }

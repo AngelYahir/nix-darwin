@@ -82,6 +82,10 @@ func LoadPolicy(path string) (Policy, error) {
 }
 
 func LoadVaultRoot(path string) (string, error) {
+	return LoadVault(path, "")
+}
+
+func LoadVault(path, name string) (string, error) {
 	sections, err := parseSections(path)
 	if err != nil {
 		if os.IsNotExist(err) {
@@ -89,7 +93,17 @@ func LoadVaultRoot(path string) (string, error) {
 		}
 		return "", fmt.Errorf("local config: %w", err)
 	}
-	root, err := parseString(sections[""]["vault_root"])
+	raw := sections[""]["vault_root"]
+	if name != "" {
+		if safeSlug(name) != name {
+			return "", errors.New("invalid vault alias")
+		}
+		raw = sections["vaults"][name]
+		if raw == "" {
+			return "", errors.New("unknown vault alias")
+		}
+	}
+	root, err := parseString(raw)
 	if err != nil || !filepath.IsAbs(root) {
 		return "", errors.New("local config: vault_root must be an absolute path")
 	}
@@ -105,6 +119,17 @@ func LoadVaultRoot(path string) (string, error) {
 }
 
 func WriteVaultRoot(path, root string) error {
+	return writeVault(path, "", root)
+}
+
+func RegisterVault(path, name, root string) error {
+	if name == "" || safeSlug(name) != name {
+		return errors.New("vault name must be a lowercase alias")
+	}
+	return writeVault(path, name, root)
+}
+
+func writeVault(path, name, root string) error {
 	abs, err := filepath.Abs(root)
 	if err != nil {
 		return fmt.Errorf("resolve vault path: %w", err)
@@ -117,7 +142,41 @@ func WriteVaultRoot(path, root string) error {
 	if err != nil || !info.IsDir() {
 		return errors.New("vault must be an existing directory")
 	}
-	return atomicWrite(path, []byte("vault_root = "+strconv.Quote(abs)+"\n"), 0o600, true)
+
+	defaultRoot := abs
+	vaults := map[string]string{}
+	sections, err := parseSections(path)
+	if err == nil {
+		if name != "" {
+			defaultRoot, err = parseString(sections[""]["vault_root"])
+			if err != nil || !filepath.IsAbs(defaultRoot) {
+				return errors.New("local config: vault_root must be an absolute path")
+			}
+		}
+		if err := parseStringMap(sections["vaults"], vaults); err != nil {
+			return fmt.Errorf("local config vaults: %w", err)
+		}
+	} else if !os.IsNotExist(err) {
+		return fmt.Errorf("local config: %w", err)
+	}
+	if name != "" {
+		vaults[name] = abs
+	}
+
+	var output strings.Builder
+	fmt.Fprintf(&output, "vault_root = %s\n", strconv.Quote(defaultRoot))
+	if len(vaults) > 0 {
+		output.WriteString("\n[vaults]\n")
+		names := make([]string, 0, len(vaults))
+		for name := range vaults {
+			names = append(names, name)
+		}
+		sort.Strings(names)
+		for _, name := range names {
+			fmt.Fprintf(&output, "%s = %s\n", name, strconv.Quote(vaults[name]))
+		}
+	}
+	return atomicWrite(path, []byte(output.String()), 0o600, true)
 }
 
 func LoadProjects(path string) ([]Project, error) {

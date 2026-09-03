@@ -251,6 +251,29 @@ func TestGatewayAcceptance(t *testing.T) {
 			t.Fatal("unmanaged note was overwritten")
 		}
 	})
+
+	t.Run("17 named vault routes publication", func(t *testing.T) {
+		gateway, vault, request := testSetup(t)
+		secondVault := filepath.Join(filepath.Dir(vault), "second-vault")
+		if err := os.Mkdir(secondVault, 0o755); err != nil {
+			t.Fatal(err)
+		}
+		if err := RegisterVault(gateway.Paths.Local, "second-brain", secondVault); err != nil {
+			t.Fatal(err)
+		}
+		request.Vault = "second-brain"
+		mustUpsert(t, gateway, request)
+		if matches, err := findKBID(vault, request.KBID); err != nil || len(matches) != 0 {
+			t.Fatalf("default vault matches=%v err=%v", matches, err)
+		}
+		onlyMatch(t, secondVault, request.KBID)
+
+		request.KBID = "unknown-vault"
+		request.Vault = "missing"
+		if _, err := gateway.Upsert(request); err == nil || err.Error() != "unknown vault alias" {
+			t.Fatalf("expected unknown vault error, got %v", err)
+		}
+	})
 }
 
 func testSetup(t *testing.T) (*Gateway, string, Request) {

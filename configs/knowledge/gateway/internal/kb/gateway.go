@@ -110,7 +110,7 @@ func (gateway *Gateway) Upsert(request Request) (response Response, err error) {
 		}
 	}
 
-	vaultRoot, err := LoadVaultRoot(gateway.Paths.Local)
+	vaultRoot, err := LoadVault(gateway.Paths.Local, request.Vault)
 	if err != nil {
 		return Response{}, err
 	}
@@ -217,8 +217,8 @@ func (gateway *Gateway) log(request Request, success bool) {
 	if gateway.Logger == nil {
 		return
 	}
-	gateway.Logger.Printf("operation=%q kb_id=%q domain=%q project=%q type=%q success=%t",
-		request.Operation, request.KBID, request.Domain, request.Project, request.Type, success)
+	gateway.Logger.Printf("operation=%q vault=%q kb_id=%q domain=%q project=%q type=%q success=%t",
+		request.Operation, request.Vault, request.KBID, request.Domain, request.Project, request.Type, success)
 }
 
 func ListenAndServe(paths Paths, logger *log.Logger) error {

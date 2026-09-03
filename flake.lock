@@ -85,22 +85,6 @@
         "type": "github"
       }
     },
-    "compound-engineering": {
-      "flake": false,
-      "locked": {
-        "lastModified": 1788392923,
-        "narHash": "sha256-+TnkBBk93+ucNOOBJ+26TuNkbk3ouJHtEjIsNSNg2zs=",
-        "owner": "EveryInc",
-        "repo": "compound-engineering-plugin",
-        "rev": "d3c6f12d4b64d36ec9924bb8cf4ad6bb8e97ce5e",
-        "type": "github"
-      },
-      "original": {
-        "owner": "EveryInc",
-        "repo": "compound-engineering-plugin",
-        "type": "github"
-      }
-    },
     "context7": {
       "flake": false,
       "locked": {
@@ -340,29 +324,12 @@
         "type": "github"
       }
     },
-    "repo-security-review": {
-      "flake": false,
-      "locked": {
-        "lastModified": 1788371046,
-        "narHash": "sha256-Q7LuaFczFpL6GlOkJOjYYUy+kwDYgEf3UO/PyqE7k+E=",
-        "owner": "Consensys",
-        "repo": "repo-security-review",
-        "rev": "3749b3134c8ade02086da5e7728c4e1fd4292289",
-        "type": "github"
-      },
-      "original": {
-        "owner": "Consensys",
-        "repo": "repo-security-review",
-        "type": "github"
-      }
-    },
     "root": {
       "inputs": {
         "agent-skills": "agent-skills",
         "archify": "archify",
         "catppuccin": "catppuccin",
         "catppuccin-zen": "catppuccin-zen",
-        "compound-engineering": "compound-engineering",
         "context7": "context7",
         "cursor-plugins": "cursor-plugins",
         "documentation": "documentation",
@@ -373,7 +340,6 @@
         "nixpkgs": "nixpkgs_2",
         "nixpkgs-zellij": "nixpkgs-zellij",
         "ponytail": "ponytail",
-        "repo-security-review": "repo-security-review",
         "sops-nix": "sops-nix",
         "superpowers": "superpowers",
         "zjstatus": "zjstatus"

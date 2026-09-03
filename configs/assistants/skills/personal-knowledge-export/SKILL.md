@@ -17,7 +17,9 @@ authorization.
 
 Use only `kb-agent upsert` with profile `personal`, domain `personal` or
 `languages`, a stable `kb_id`, and an appropriate type. Language publications
-must also provide `--language`. Never expose existing note content.
+must also provide `--language`. Use vault alias `second-brain` by default and
+`knowledge-base` only when the user explicitly requests it. Never invent or
+pass filesystem paths, and never expose existing note content.
 
 This skill is prepared for a future personal-assistant integration and must not
 be installed for project agents.
