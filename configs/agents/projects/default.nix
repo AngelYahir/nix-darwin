@@ -60,6 +60,8 @@ let
       copy_if_missing "${template}/CLAUDE.md" "CLAUDE.md"
       copy_if_missing "${template}/AGENTS.md" "AGENTS.md"
       copy_if_missing "${template}/skills/orchestrate" ".claude/skills/orchestrate"
+      copy_if_missing "${template}/skills/knowledge-export" ".claude/skills/knowledge-export"
+      copy_if_missing "${template}/skills/knowledge-export" ".agents/skills/knowledge-export"
 
       if [[ ! -e .claude/skills/herdr/SKILL.md || ! -e .agents/skills/herdr/SKILL.md ]]; then
         herdr_skill="$(mktemp)"

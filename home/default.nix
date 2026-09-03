@@ -24,6 +24,7 @@
         ../configs/codex.nix
         ../configs/agents
         ../configs/assistants
+        ../configs/knowledge
 
         ../configs/wp.nix
     ];

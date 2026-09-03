@@ -21,15 +21,22 @@ for path in \
   .ai/handoffs/current.md \
   .ai/examples/TASK.md \
   .claude/skills/orchestrate/SKILL.md \
+  .claude/skills/knowledge-export/SKILL.md \
+  .agents/skills/knowledge-export/SKILL.md \
   .claude/skills/herdr/SKILL.md \
   .agents/skills/herdr/SKILL.md; do
   test -e "$test_root/$path"
 done
 cmp -s "$test_root/.claude/skills/herdr/SKILL.md" "$test_root/.agents/skills/herdr/SKILL.md"
+cmp -s "$test_root/.claude/skills/knowledge-export/SKILL.md" "$test_root/.agents/skills/knowledge-export/SKILL.md"
 
 printf 'project-specific state\n' > "$test_root/.ai/STATE.md"
+printf 'project-specific Claude skill\n' > "$test_root/.claude/skills/knowledge-export/SKILL.md"
+printf 'project-specific Codex skill\n' > "$test_root/.agents/skills/knowledge-export/SKILL.md"
 "$init"
 test "$(cat "$test_root/.ai/STATE.md")" = "project-specific state"
+test "$(cat "$test_root/.claude/skills/knowledge-export/SKILL.md")" = "project-specific Claude skill"
+test "$(cat "$test_root/.agents/skills/knowledge-export/SKILL.md")" = "project-specific Codex skill"
 test -z "$(find "$test_root" -mindepth 2 -type d -name .git -print -quit)"
 
 cd "$fallback_root"
