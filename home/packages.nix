@@ -43,6 +43,10 @@
         #archives
         unzip
         zip
+        zathura
+
+        #mail
+        aerc
 
         #images
         pngpaste
