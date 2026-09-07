@@ -31,6 +31,9 @@
     catppuccin-zen.url = "github:catppuccin/zen-browser";
     catppuccin-zen.flake = false;
 
+    foxy-nvim.url = "github:AngelYahir/foxy.nvim";
+    foxy-nvim.flake = false;
+
     # Agent skills (non-flake sources)
     ponytail.url = "github:DietrichGebert/ponytail";
     ponytail.flake = false;

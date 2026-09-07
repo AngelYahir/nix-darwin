@@ -54,6 +54,8 @@
         rembg
         ffmpeg
         exiftool
+        chafa
+        ghostscript
 
         #rust
         rustc
