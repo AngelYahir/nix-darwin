@@ -29,6 +29,9 @@
         git
         gh
         lazygit
+        lua5_1
+        lua5_1.pkgs.luarocks
+        python314
 
         #networking
         httpie
@@ -65,9 +68,7 @@
         air
 
         #AI
-        claude-code
         github-copilot-cli
-        codex
         inputs.herdr.packages.${pkgs.system}.default
     ];
 }

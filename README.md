@@ -342,7 +342,7 @@ Two commands drive the workflow:
 
 | Command | Alias | Action |
 | --- | --- | --- |
-| `project-agents` | `agents` | Opens or re-attaches a three-pane [Herdr](https://github.com/herdrdev/herdr) workspace running Claude, Codex, and Copilot against the current project |
+| `project-agents` | `agents` | Opens or re-attaches a [Herdr](https://github.com/herdrdev/herdr) workspace with Claude; workers are started only when needed |
 | `agent-project-init` | `aiinit` | Copies the agent scaffolding (`.ai/`, `CLAUDE.md`, `AGENTS.md`, and the orchestration skills) into the current repository |
 
 `agents` is idempotent: it identifies the workspace by label and working directory,

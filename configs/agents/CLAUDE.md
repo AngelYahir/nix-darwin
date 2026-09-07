@@ -1,30 +1,15 @@
 # Global engineering instructions
 
-Prefer repository-local instructions over these defaults.
+Prefer repository-local instructions and preserve unrelated changes.
 
-## Project memory
+Work directly when coordination would add more overhead than value. Use the project-local `orchestrate` skill when delegation or multi-agent coordination is useful or requested; choose workers by the task, not a fixed roster.
 
-If `.ai/` exists:
+Load skills, documentation, and tools only when they help the current task. Read relevant project memory once and revisit it when it changes; avoid repeating context already available. Use `.ai/` for durable task state when needed, not duplicate technical documentation.
 
-- Read `.ai/PROJECT.md`.
-- Read `.ai/STATE.md`.
-- Read the relevant task under `.ai/tasks/`.
-- Read relevant decision memory under `.ai/decisions/`.
+Keep searches and tool output focused. Delegate bounded work with enough context to act independently; avoid repeating the worker's investigation. Prefer completion notifications or bounded waits over frequent status polling.
 
-Do not treat conversation history as durable project state.
+Preserve the user's model and reasoning settings. Reduce redundant context and coordination before trading away reasoning quality.
 
-Treat `.ai/` as agent memory, not canonical technical documentation. Follow the repository's existing documentation and ADR conventions.
+Inspect changed code and run the smallest relevant validation before completion or integration. Repeat checks when changes or unresolved risks warrant it. Report results, limitations, and blockers concisely.
 
-## Delegation
-
-When project-local orchestration skills are available and the task benefits from delegation, use them.
-
-Do not delegate trivial tasks.
-
-Never let multiple write-capable agents modify the same checkout concurrently.
-
-## Git
-
-Do not commit, push, force-push, or rewrite history unless explicitly requested.
-
-Prefer small and reviewable changes.
+Never let concurrent writers share a checkout. Delegated workers stay within their assigned scope and checkout; the orchestrator owns integration. Do not commit, merge, push, force-push, or rewrite shared history unless authorized.

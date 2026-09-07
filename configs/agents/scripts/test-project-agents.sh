@@ -25,7 +25,7 @@ else
 fi
 EOF
 
-for command in claude codex copilot; do
+for command in claude; do
     cat > "$mock_bin/$command" <<'EOF'
 #!/usr/bin/env bash
 exit 0
@@ -98,14 +98,13 @@ run_launcher() (
 run_launcher
 
 grep -Fqx "workspace create --cwd $launch_dir --label agents:My Payments API --no-focus" "$log"
-grep -Fqx "pane split --pane w1:p1 --direction right --ratio 0.5 --cwd $launch_dir --no-focus" "$log"
-grep -Fqx "pane split --pane w1:p2 --direction down --ratio 0.5 --cwd $launch_dir --no-focus" "$log"
 grep -Fqx "agent start claude-my-payments-api --kind claude --pane w1:p1 --timeout 4000" "$log"
-grep -Fqx "agent start codex-my-payments-api --kind codex --pane w1:p2 --timeout 4000" "$log"
-grep -Fqx "agent start copilot-my-payments-api --kind copilot --pane w1:p3 --timeout 4000" "$log"
 grep -Fqx "workspace focus w1" "$log"
 grep -Fqx "agent focus w1:p1" "$log"
-test "$(grep -c '^pane split ' "$log")" -eq 2
+if grep -Eq '^(pane split|agent start (codex|copilot)-)' "$log"; then
+    echo "launcher started unnecessary workers" >&2
+    exit 1
+fi
 
 : > "$log"
 run_launcher reuse
@@ -130,19 +129,13 @@ if grep -Eq '^(workspace create|pane split) ' "$log"; then
     exit 1
 fi
 grep -Fqx "agent start claude-my-payments-api --kind claude --pane w9:p1 --timeout 4000" "$log"
-grep -Fqx "agent start codex-my-payments-api --kind codex --pane w9:p2 --timeout 4000" "$log"
-grep -Fqx "agent start copilot-my-payments-api --kind copilot --pane w9:p3 --timeout 4000" "$log"
 printf -v quoted_launch_dir '%q' "$launch_dir"
 grep -Fqx "pane run w9:p1 cd -- $quoted_launch_dir" "$log"
-grep -Fqx "pane run w9:p2 cd -- $quoted_launch_dir" "$log"
-grep -Fqx "pane run w9:p3 cd -- $quoted_launch_dir" "$log"
 
 : > "$log"
 run_launcher collision
 
 hashed_slug="my-payments-api-$(printf '%s' "$root" | git hash-object --stdin | cut -c1-6)"
 grep -Fqx "agent start claude-$hashed_slug --kind claude --pane w1:p1 --timeout 4000" "$log"
-grep -Fqx "agent start codex-$hashed_slug --kind codex --pane w1:p2 --timeout 4000" "$log"
-grep -Fqx "agent start copilot-$hashed_slug --kind copilot --pane w1:p3 --timeout 4000" "$log"
 
 echo "project-agents test passed"

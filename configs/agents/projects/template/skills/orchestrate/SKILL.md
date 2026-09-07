@@ -1,57 +1,28 @@
 ---
 name: orchestrate
-description: >
-  Orchestrate complex software work across Claude, Codex and Copilot using
-  Herdr, persistent project state and isolated Git worktrees. Use for large
-  multi-step tasks, delegation, parallelizable work, session continuation and
-  cross-agent review.
+description: Coordinate delegated software work when independent subtasks or review justify multiple agents, or when the user requests delegation.
 ---
 
 # Orchestrate development work
 
-Claude is the primary orchestrator. Claude owns reasoning, architecture, planning, task decomposition, worker selection, delegation, review, integration, and persistent project state.
+Work directly when delegation would add overhead without a concrete benefit. Otherwise choose the smallest useful set of workers based on the task and available capabilities. Codex suits complex implementation; Copilot suits bounded mechanical work, but neither is required by default. `--delegate` requests delegation, not a fixed roster; respect explicitly requested agents. If requested delegation is unavailable, report the blocker instead of silently substituting local work.
 
-Use Codex for complex implementation, refactors, deep repository analysis, code review, complex tests, and execution tracing. Use Copilot for bounded changes, scaffolding, repetitive edits, simple tests, and mechanical work.
+## Scope and context
 
-Keep architectural decisions, planning, integration, cross-task reasoning, and tasks cheaper to do directly with Claude.
+Use relevant project instructions and context already available. Read missing task scope or architectural decisions as needed. Load only skills needed for the current phase; workers load those needed for their own work.
 
-## Establish context
+Give each worker a bounded objective, relevant paths, constraints, and acceptance criteria. Workers may not inherit conversation history. Use a task file under `.ai/tasks/` when a shared contract or continuation needs durable state; otherwise a concise prompt is enough. Avoid copying full histories, logs, or unrelated documentation.
 
-Before non-trivial work:
+Let the worker investigate its implementation; the orchestrator focuses on dependencies, decisions, review, and integration. Choose models and reasoning appropriate to complexity and risk, preserving user settings unless a change is requested. Do not reduce reasoning merely to compensate for oversized context.
 
-1. Read `.ai/PROJECT.md`.
-2. Read `.ai/STATE.md`.
-3. Read the relevant file in `.ai/tasks/`.
-4. Read canonical ADRs and relevant decision memory in `.ai/decisions/`.
+## Execution
 
-Never use conversation history as the only source of truth. Keep `.ai/` as agent memory: update `.ai/STATE.md` with current state, `.ai/decisions/` with compact orchestration context or pointers, and `.ai/tasks/` with task details. Keep canonical technical documentation and ADRs in the repository's existing documentation structure; if none exists, prefer `docs/adr/` for human-facing ADRs. Never duplicate the same decision.
+Use existing delegation tools. Load the local Herdr skill only when using Herdr; create or reuse panes only for participating workers. Verify prompt delivery and activity. Prefer completion notifications or bounded waits; inspect detailed logs when progress stalls or errors occur.
 
-## Decide whether to delegate
+Never let concurrent writers share a checkout. Use isolated worktrees for concurrent implementation or when isolation otherwise matters. Assign explicit scope and checkout ownership. Workers must not modify another checkout, integrate their own branches, push, force-push, or rewrite shared history. The orchestrator owns integration; preserve unrelated changes and user authorization boundaries.
 
-Delegate when work is substantial, parallelizable, benefits from independent review, or must continue across sessions. Do not delegate trivial tasks or work whose coordination cost exceeds its implementation cost.
+## Completion
 
-Use the project-local Herdr skill for the installed version's commands.
+Ask workers for changed files, validation results, remaining risks, and blockers. Inspect the actual diff and relevant evidence, not just summaries. Run the smallest relevant checks on the integrated result; avoid rerunning unchanged checks without a reason. Resolve remaining work locally or return it to the worker according to ownership and coordination cost.
 
-## Isolate every writer
-
-Never allow two write-capable agents to modify the same checkout concurrently.
-
-For delegated work with writes:
-
-1. Create or update the persistent task file.
-2. Create branch `agent/<worker>/<task-id>`.
-3. Create an isolated Git worktree under `~/.herdr/worktrees`.
-4. Start the worker inside that worktree.
-5. Give the worker the task file as its source of truth.
-6. Wait for the result.
-7. Review the diff.
-8. Run the relevant validations.
-9. Integrate only after review passes.
-
-Do not create nested Git repositories. Claude owns the primary checkout and integration.
-
-Workers must not merge into the primary branch, push, force-push, rewrite shared history, or modify another worktree.
-
-## Complete the task
-
-Review worker output against the task acceptance criteria, record validation and remaining risks in the task file, and update `.ai/STATE.md` without turning it into a historical log.
+Persist only useful decisions and continuation state in `.ai/`; keep canonical documentation in the repository's existing structure. At task or phase boundaries, preserve a short handoff before starting a fresh session or compacting a long one when needed.

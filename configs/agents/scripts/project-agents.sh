@@ -1,6 +1,6 @@
 set -euo pipefail
 
-for dependency in herdr git jq claude codex copilot; do
+for dependency in herdr git jq claude; do
     if ! command -v "$dependency" >/dev/null 2>&1; then
         echo "error: missing command: $dependency" >&2
         exit 1
@@ -126,42 +126,23 @@ if jq -e --arg slug "$slug" --arg workspace_id "$workspace_id" '
 fi
 
 claude_name="claude-$slug"
-codex_name="codex-$slug"
-copilot_name="copilot-$slug"
 
 if [[ -n "$workspace_id" ]]; then
     echo "Reusing existing Herdr workspace for project..."
     claude_pane="$(jq -r --arg workspace_id "$workspace_id" '[.result.snapshot.panes[] | select(.workspace_id == $workspace_id and .label == "Claude") | .pane_id][0] // ""' <<<"$snapshot")"
-    codex_pane="$(jq -r --arg workspace_id "$workspace_id" '[.result.snapshot.panes[] | select(.workspace_id == $workspace_id and .label == "Codex") | .pane_id][0] // ""' <<<"$snapshot")"
-    copilot_pane="$(jq -r --arg workspace_id "$workspace_id" '[.result.snapshot.panes[] | select(.workspace_id == $workspace_id and .label == "Copilot") | .pane_id][0] // ""' <<<"$snapshot")"
 else
     echo "Claude: $claude_name"
-    echo "Codex: $codex_name"
-    echo "Copilot: $copilot_name"
 
     created="$(herdr workspace create --cwd "$launch_dir" --label "$workspace_label" --no-focus)"
     workspace_id="$(jq -er '.result.workspace.workspace_id' <<<"$created")"
     claude_pane="$(jq -er '.result.root_pane.pane_id' <<<"$created")"
 
-    codex_pane="$(herdr pane split --pane "$claude_pane" --direction right --ratio 0.5 --cwd "$launch_dir" --no-focus \
-        | jq -er '.result.pane.pane_id')"
-    copilot_pane="$(herdr pane split --pane "$codex_pane" --direction down --ratio 0.5 --cwd "$launch_dir" --no-focus \
-        | jq -er '.result.pane.pane_id')"
-
     herdr pane rename "$claude_pane" Claude >/dev/null
-    herdr pane rename "$codex_pane" Codex >/dev/null
-    herdr pane rename "$copilot_pane" Copilot >/dev/null
 fi
 
 herdr workspace focus "$workspace_id" >/dev/null
 
-ensure_agent Claude "$claude_name" claude "$claude_pane" &
-claude_start_pid=$!
-ensure_agent Codex "$codex_name" codex "$codex_pane" &
-codex_start_pid=$!
-ensure_agent Copilot "$copilot_name" copilot "$copilot_pane" &
-copilot_start_pid=$!
-wait "$claude_start_pid" "$codex_start_pid" "$copilot_start_pid"
+ensure_agent Claude "$claude_name" claude "$claude_pane"
 
 herdr workspace focus "$workspace_id" >/dev/null
 if [[ -n "$claude_pane" ]] && ! herdr agent focus "$claude_pane" >/dev/null 2>&1; then

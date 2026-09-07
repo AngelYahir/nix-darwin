@@ -27,6 +27,9 @@
             "chatgpt"
             "threema@beta"
             "claude"
+            "claude-code@latest"
+            "codex"
+            "thunderbird"
         ];
 
         onActivation = {
