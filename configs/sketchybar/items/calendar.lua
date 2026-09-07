@@ -2,7 +2,7 @@ local settings = require("settings")
 local colors = require("colors")
 
 local date = sbar.add("item", "widgets.date", {
-	position = "center",
+	position = settings.position.info,
 	icon = {
 		string = os.date("%b %d %a"),
 		color = colors.text,
@@ -19,7 +19,7 @@ local date = sbar.add("item", "widgets.date", {
 })
 
 local time = sbar.add("item", "widgets.time", {
-	position = "center",
+	position = settings.position.info,
 	icon = {
 		string = os.date("%H:%M"),
 		color = colors.accent,

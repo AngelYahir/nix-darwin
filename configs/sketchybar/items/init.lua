@@ -1,5 +1,6 @@
 local colors = require("colors")
-local layout = require("settings").layout
+local settings = require("settings")
+local layout = settings.layout
 
 require("items.apple")
 require("items.spaces")
@@ -26,7 +27,7 @@ sbar.add("bracket", "bracket.left", { "apple.logo", "/space\\..*/", "spaces.righ
 	background = panel(),
 })
 
-sbar.add("bracket", "bracket.media", {
+sbar.add("bracket", "bracket.media", settings.notch and { "/^center\\.media.*/" } or {
 	"/^center\\.media.*/",
 	"widgets.weather",
 	"widgets.date",
@@ -34,6 +35,12 @@ sbar.add("bracket", "bracket.media", {
 }, {
 	background = panel(layout.media_group_height, colors.base),
 })
+
+if settings.notch then
+	sbar.add("bracket", "bracket.info", { "widgets.weather", "widgets.date", "widgets.time" }, {
+		background = panel(layout.media_group_height, colors.base),
+	})
+end
 
 sbar.add("bracket", "bracket.right", {
 	"widgets.wifi",

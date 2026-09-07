@@ -6,8 +6,8 @@
 
         settings = {
             credential = {
-                # Use the macOS keychain for storing Git credentials
-                helper = "/Library/Developer/CommandLineTools/usr/libexec/git-core/git-credential-osxkeychain";
+                # Ignore Nix's per-store helper and use the stable macOS binary.
+                helper = [ "" "/Library/Developer/CommandLineTools/usr/libexec/git-core/git-credential-osxkeychain" ];
             };
 
             init.defaultBranch = "main";

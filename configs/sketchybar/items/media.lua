@@ -26,7 +26,7 @@ local marquee_command = "sketchybar-media-marquee"
 
 local function add_spectrum(name, color, label_padding_left, label_padding_right)
 	return sbar.add("item", name, {
-		position = "center",
+		position = settings.position.media,
 		drawing = false,
 		width = layout.media_spectrum_width,
 		background = {
@@ -55,7 +55,7 @@ local spectrum_left = add_spectrum("center.media.spectrum.left", colors.sky, 3, 
 local spectrum_right = nil
 
 local playpause = sbar.add("item", "center.media.playpause", {
-	position = "center",
+	position = settings.position.media,
 	width = 24,
 	icon = {
 		string = icons.media.play,
@@ -72,7 +72,7 @@ local playpause = sbar.add("item", "center.media.playpause", {
 })
 
 local artwork = sbar.add("item", "center.media.artwork", {
-	position = "center",
+	position = settings.position.media,
 	width = layout.media_artwork_size,
 	background = {
 		image = { string = "", scale = 0.25, corner_radius = 5 },
@@ -88,7 +88,7 @@ local artwork = sbar.add("item", "center.media.artwork", {
 })
 
 local media = sbar.add("item", "center.media", {
-	position = "center",
+	position = settings.position.media,
 	width = layout.media_width,
 	icon = { drawing = false },
 	scroll_texts = false,

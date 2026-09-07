@@ -29,6 +29,9 @@
         git
         gh
         lazygit
+        lua5_1
+        lua5_1.pkgs.luarocks
+        python314
 
         #networking
         httpie
@@ -40,6 +43,10 @@
         #archives
         unzip
         zip
+        zathura
+
+        #mail
+        aerc
 
         #images
         pngpaste
@@ -47,6 +54,8 @@
         rembg
         ffmpeg
         exiftool
+        chafa
+        ghostscript
 
         #rust
         rustc
@@ -65,9 +74,7 @@
         air
 
         #AI
-        claude-code
         github-copilot-cli
-        codex
         inputs.herdr.packages.${pkgs.system}.default
     ];
 }

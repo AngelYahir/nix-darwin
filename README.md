@@ -29,7 +29,8 @@
 | User environment | Home Manager and Catppuccin Mocha with a mauve accent |
 | Desktop | AeroSpace, JankyBorders, SketchyBar, and wallpaper rotation |
 | Terminal | Ghostty, Zsh, Starship, Zellij, Fastfetch, and Yazi |
-| CLI | Neovim, Git, GitHub CLI, ripgrep, fd, fzf, zoxide, bat, eza, jq, yq, and more |
+| Editor | Neovim with [Foxy.nvim](https://github.com/AngelYahir/foxy.nvim) |
+| CLI | Git, GitHub CLI, ripgrep, fd, fzf, zoxide, bat, eza, jq, yq, and more |
 | Media | CAVA, Now Playing, artwork, media controls, and optional Cider support |
 | Applications | Zen, Arc, VS Code, DataGrip, Raycast, Ghostty, ONLYOFFICE, and SF Symbols through Homebrew |
 | Agents | Claude Code, Codex, and Copilot with a Herdr workspace launcher and shared skills |
@@ -330,6 +331,21 @@ The bar displays:
 
 The media widget first uses Cider's local API when it finds a token named `SketchyBar`; otherwise, it uses Now Playing sessions published by macOS. Cider is optional and is not installed by this configuration.
 
+### Neovim · Foxy.nvim
+
+![Foxy.nvim editing Lua in Ghostty and Zellij](./assets/screenshot-2026-09-06_19-00-49.png)
+
+Neovim uses my [Foxy.nvim](https://github.com/AngelYahir/foxy.nvim) configuration,
+with project profiles, a command hub, and persistent themes. Take a look, try it
+out, and leave a star if you enjoy it — ideas and contributions are welcome!
+
+`configs/neovim.nix` links Foxy's Lua files and logos into `~/.config/nvim` from
+the source pinned in `flake.lock`. Before the first activation, move any existing
+`~/.config/nvim` to a backup location. Open `nvim` after activation to let Lazy
+download plugins, then run `:checkhealth foxy`. Plugins and language servers are
+managed by Lazy and Mason at runtime; `lazy-lock.json` remains writable.
+Update the configuration with `nix flake update foxy-nvim`, then rebuild.
+
 ### Coding agents
 
 ![Claude, Codex, and Copilot in a Herdr workspace](./assets/screenshot-2026-09-03_13-31-16.png)
@@ -342,7 +358,7 @@ Two commands drive the workflow:
 
 | Command | Alias | Action |
 | --- | --- | --- |
-| `project-agents` | `agents` | Opens or re-attaches a three-pane [Herdr](https://github.com/herdrdev/herdr) workspace running Claude, Codex, and Copilot against the current project |
+| `project-agents` | `agents` | Opens or re-attaches a [Herdr](https://github.com/herdrdev/herdr) workspace with Claude; workers are started only when needed |
 | `agent-project-init` | `aiinit` | Copies the agent scaffolding (`.ai/`, `CLAUDE.md`, `AGENTS.md`, and the orchestration skills) into the current repository |
 
 `agents` is idempotent: it identifies the workspace by label and working directory,
@@ -456,4 +472,3 @@ The interface follows Catppuccin Mocha. Its primary colors are:
 | Red | `#f38ba8` | Warnings |
 
 Keeping this palette when extending the configuration helps Ghostty, Zellij, Fastfetch, SketchyBar, and JankyBorders feel like a single environment.
-

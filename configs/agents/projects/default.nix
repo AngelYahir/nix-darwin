@@ -42,6 +42,20 @@ let
         echo "create: $dst"
       }
 
+      update_skill() {
+        src="$1"
+        dst="$2"
+
+        mkdir -p "$dst"
+        cp -R --no-preserve=mode -- "$src"/. "$dst"
+        echo "update: $dst"
+      }
+
+      update_file() {
+        cp --no-preserve=mode -- "$1" "$2"
+        echo "update: $2"
+      }
+
       echo "Initializing agent project at: $root"
 
       mkdir -p \
@@ -57,22 +71,17 @@ let
       copy_if_missing "${template}/ROADMAP.md" ".ai/ROADMAP.md"
       copy_if_missing "${template}/HANDOFF.md" ".ai/handoffs/current.md"
       copy_if_missing "${template}/examples/TASK.md" ".ai/examples/TASK.md"
-      copy_if_missing "${template}/CLAUDE.md" "CLAUDE.md"
-      copy_if_missing "${template}/AGENTS.md" "AGENTS.md"
-      copy_if_missing "${template}/skills/orchestrate" ".claude/skills/orchestrate"
-      copy_if_missing "${template}/skills/knowledge-export" ".claude/skills/knowledge-export"
-      copy_if_missing "${template}/skills/knowledge-export" ".agents/skills/knowledge-export"
+      update_file "${template}/CLAUDE.md" "CLAUDE.md"
+      update_file "${template}/AGENTS.md" "AGENTS.md"
+      update_skill "${template}/skills/orchestrate" ".claude/skills/orchestrate"
+      update_skill "${template}/skills/knowledge-export" ".claude/skills/knowledge-export"
+      update_skill "${template}/skills/knowledge-export" ".agents/skills/knowledge-export"
 
-      if [[ ! -e .claude/skills/herdr/SKILL.md || ! -e .agents/skills/herdr/SKILL.md ]]; then
-        herdr_skill="$(mktemp)"
-        trap 'rm -f "$herdr_skill"' EXIT
-        ${lib.getExe herdr} --skill > "$herdr_skill"
-        copy_if_missing "$herdr_skill" ".claude/skills/herdr/SKILL.md"
-        copy_if_missing "$herdr_skill" ".agents/skills/herdr/SKILL.md"
-      else
-        echo "skip: .claude/skills/herdr/SKILL.md"
-        echo "skip: .agents/skills/herdr/SKILL.md"
-      fi
+      herdr_skill="$(mktemp)"
+      trap 'rm -f "$herdr_skill"' EXIT
+      ${lib.getExe herdr} --skill > "$herdr_skill"
+      update_file "$herdr_skill" ".claude/skills/herdr/SKILL.md"
+      update_file "$herdr_skill" ".agents/skills/herdr/SKILL.md"
 
       echo "Done. Next: edit .ai/PROJECT.md"
     '';

@@ -20,6 +20,7 @@
         ../configs/obsidian.nix
         ../configs/zen.nix
         ../configs/yazi.nix
+        ../configs/neovim.nix
         ../configs/cava.nix
         ../configs/codex.nix
         ../configs/agents
