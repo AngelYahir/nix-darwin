@@ -1,4 +1,4 @@
-local notch = true -- Change only this boolean to switch notch mode.
+local notch = false -- Change only this boolean to switch notch mode.
 local mode = notch
 		and {
 			bar_height = 38,

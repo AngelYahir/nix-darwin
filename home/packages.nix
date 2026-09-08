@@ -33,6 +33,10 @@
         lua5_1.pkgs.luarocks
         python314
 
+        #containers
+        colima
+        docker # includes docker compose
+
         #networking
         httpie
         nmap
