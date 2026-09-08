@@ -24,14 +24,15 @@ printf '%%s' "$now_playing" | jq -r --arg playing "$playing" '.info | [.name // 
 local spectrum_command = "sketchybar-media-spectrum"
 local marquee_command = "sketchybar-media-marquee"
 
-local function add_spectrum(name, color, label_padding_left, label_padding_right)
+local function add_spectrum(name, color, label_padding_left, label_padding_right, position)
 	return sbar.add("item", name, {
-		position = settings.position.media,
+		position = position or settings.position.media,
 		drawing = false,
-		width = layout.media_spectrum_width,
+		width = settings.notch and "dynamic" or layout.media_spectrum_width,
 		background = {
 			color = colors.base,
 			height = layout.media_group_height,
+			corner_radius = settings.notch and layout.media_group_height / 2 or layout.item_radius,
 		},
 		icon = { drawing = false },
 		label = {
@@ -43,11 +44,11 @@ local function add_spectrum(name, color, label_padding_left, label_padding_right
 				size = 9,
 			},
 			color = color,
-			padding_left = label_padding_left,
-			padding_right = label_padding_right,
+			padding_left = settings.notch and 4 or label_padding_left,
+			padding_right = settings.notch and 4 or label_padding_right,
 		},
-		padding_left = 1,
-		padding_right = 1,
+		padding_left = settings.notch and 8 or 1,
+		padding_right = settings.notch and 8 or 1,
 	})
 end
 
@@ -532,7 +533,8 @@ return {
 		if spectrum_right then
 			return
 		end
-		spectrum_right = add_spectrum("center.media.spectrum.right", colors.mauve, 10, 3)
+		spectrum_right = add_spectrum("center.media.spectrum.right", colors.mauve, 10, 3,
+			settings.notch and settings.position.info or settings.position.media)
 		spectrum_right:set({ drawing = last_spectrum_state == true })
 	end,
 }
