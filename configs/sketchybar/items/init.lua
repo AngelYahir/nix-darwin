@@ -5,6 +5,10 @@ local layout = settings.layout
 require("items.apple")
 require("items.spaces")
 local media = require("items.media")
+-- q/e grow away from the notch: add each spectrum before its neighboring group.
+if settings.notch then
+	media.add_right_spectrum()
+end
 require("items.weather")
 require("items.calendar")
 media.add_right_spectrum()
@@ -27,7 +31,11 @@ sbar.add("bracket", "bracket.left", { "apple.logo", "/space\\..*/", "spaces.righ
 	background = panel(),
 })
 
-sbar.add("bracket", "bracket.media", settings.notch and { "/^center\\.media.*/" } or {
+sbar.add("bracket", "bracket.media", settings.notch and {
+	"center.media.playpause",
+	"center.media.artwork",
+	"center.media",
+} or {
 	"/^center\\.media.*/",
 	"widgets.weather",
 	"widgets.date",
